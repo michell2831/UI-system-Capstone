@@ -1,0 +1,17 @@
+{
+  // Disable the built-in CSS/SCSS validators — they don't understand
+  // Tailwind's @tailwind, @apply, and @layer directives and produce
+  // false-positive "Unknown at rule" warnings.
+  // The Tailwind CSS IntelliSense extension handles validation instead.
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+
+  // Tell the Tailwind IntelliSense extension where to find the config file
+  "tailwindCSS.experimental.configFile": "tailwind.config.ts",
+
+  // Optional: enable @apply completions inside CSS files
+  "editor.quickSuggestions": {
+    "strings": "on"
+  }
+}

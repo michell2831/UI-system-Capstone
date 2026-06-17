@@ -41,8 +41,8 @@ function InteractiveCard({
       style={{
         ...style,
         borderTop: `4px solid ${accentColor}`,
-        boxShadow: hovered 
-          ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' 
+        boxShadow: hovered
+          ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
           : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         transform: hovered ? 'scale(1.02)' : 'scale(1)',
       }}
@@ -76,8 +76,8 @@ function StatCard({
       className="transition-all duration-300 ease-in-out"
       style={{
         borderTop: `4px solid ${accentColor}`,
-        boxShadow: hovered 
-          ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' 
+        boxShadow: hovered
+          ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
           : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         transform: hovered ? 'scale(1.02)' : 'scale(1)',
       }}
@@ -134,8 +134,8 @@ export function DashboardPage() {
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         {/* Page Title */}
         <div>
-          <h2 className="page-title text-2xl">Dashboard</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Overview — {user?.office_name}</p>
+          <h2 className="page-title text-2xl !text-black font-bold">Dashboard</h2>
+          <p className="text-xs !text-black mt-0.5">Overview — {user?.office_name}</p>
         </div>
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

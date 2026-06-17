@@ -379,22 +379,22 @@ export function UsersPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   {/* Sticky Header */}
-                  <thead className="sticky top-0 bg-[#F5F7FA] border-b border-border z-10">
+                  <thead className="sticky top-0 border-b border-border z-10">
                     <tr>
                       <th
                         onClick={() => handleSort('firstName')}
-                        className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground select-none"
+                        className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider cursor-pointer hover:opacity-70 select-none"
                       >
                         <div className="flex items-center gap-1">
                           First Name <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
                         </div>
                       </th>
-                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider select-none">
+                      <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider select-none">
                         Middle Name
                       </th>
                       <th
                         onClick={() => handleSort('surname')}
-                        className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground select-none"
+                        className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider cursor-pointer hover:opacity-70 select-none"
                       >
                         <div className="flex items-center gap-1">
                           Surname <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
@@ -402,7 +402,7 @@ export function UsersPage() {
                       </th>
                       <th
                         onClick={() => handleSort('email')}
-                        className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground select-none"
+                        className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider cursor-pointer hover:opacity-70 select-none"
                       >
                         <div className="flex items-center gap-1">
                           Email <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
@@ -410,24 +410,24 @@ export function UsersPage() {
                       </th>
                       <th
                         onClick={() => handleSort('role')}
-                        className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground select-none"
+                        className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider cursor-pointer hover:opacity-70 select-none"
                       >
                         <div className="flex items-center gap-1">
                           Role <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
                         </div>
                       </th>
-                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider select-none">
+                      <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider select-none">
                         Status
                       </th>
                       <th
                         onClick={() => handleSort('created_at')}
-                        className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground select-none"
+                        className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider cursor-pointer hover:opacity-70 select-none"
                       >
                         <div className="flex items-center gap-1">
                           Date Created <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
                         </div>
                       </th>
-                      <th className="px-5 py-3.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider select-none">
+                      <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wider select-none">
                         Actions
                       </th>
                     </tr>

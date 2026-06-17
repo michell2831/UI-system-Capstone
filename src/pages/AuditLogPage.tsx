@@ -215,13 +215,13 @@ export function AuditLogPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border/60 bg-muted/30">
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5 w-40">Timestamp</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5 w-36">Action</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5">Transaction</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5 w-36">Actor</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5 w-52">Change</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5">Remarks</th>
+                  <tr className="border-b border-border/60">
+                    <th className="text-left text-xs font-bold px-4 py-2.5 w-40">Timestamp</th>
+                    <th className="text-left text-xs font-bold px-4 py-2.5 w-36">Action</th>
+                    <th className="text-left text-xs font-bold px-4 py-2.5">Transaction</th>
+                    <th className="text-left text-xs font-bold px-4 py-2.5 w-36">Actor</th>
+                    <th className="text-left text-xs font-bold px-4 py-2.5 w-52">Change</th>
+                    <th className="text-left text-xs font-bold px-4 py-2.5">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">

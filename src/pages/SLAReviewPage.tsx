@@ -13,6 +13,42 @@ import { slaPercent } from '@/utils/slaUtils'
 import { cn } from '@/utils/cn'
 import { MOCK_SERVICES } from '@/utils/mockData'
 
+// ── Accent colours (mirrors DashboardPage palette) ─────────────────────────
+const T = {
+  maroon: '#580000',
+  green:  '#22C55E',
+  red:    '#E24B4A',
+}
+
+// ── InteractiveCard — coloured top-border + hover lift (same as Dashboard) ──
+function InteractiveCard({
+  accentColor,
+  className,
+  children,
+}: {
+  accentColor: string
+  className?: string
+  children: React.ReactNode
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <Card
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={cn('transition-all duration-300 ease-in-out', className)}
+      style={{
+        borderTop: `4px solid ${accentColor}`,
+        boxShadow: hovered
+          ? '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)'
+          : '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+        transform: hovered ? 'scale(1.02)' : 'scale(1)',
+      }}
+    >
+      {children}
+    </Card>
+  )
+}
+
 type CategoryFilter = 'all' | ServiceCategory
 
 export function SLAReviewPage() {
@@ -67,7 +103,7 @@ export function SLAReviewPage() {
         </div>
         {/* Summary row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+          <InteractiveCard accentColor={T.maroon}> {/* ✅ Compliance Rate — maroon accent */}
             <CardContent className="pt-5 pb-5">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -77,8 +113,8 @@ export function SLAReviewPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-          <Card>
+          </InteractiveCard>
+          <InteractiveCard accentColor={T.green}> {/* ✅ Compliant — green accent */}
             <CardContent className="pt-5 pb-5">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-success" />
@@ -90,8 +126,8 @@ export function SLAReviewPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-          <Card>
+          </InteractiveCard>
+          <InteractiveCard accentColor={T.red}> {/* ✅ Non-Compliant — red accent */}
             <CardContent className="pt-5 pb-5">
               <div className="flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-destructive" />
@@ -103,8 +139,8 @@ export function SLAReviewPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-          <Card>
+          </InteractiveCard>
+          <InteractiveCard accentColor={T.red}> {/* ✅ SLA Breached — red accent */}
             <CardContent className="pt-5 pb-5">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -116,12 +152,12 @@ export function SLAReviewPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </InteractiveCard>
         </div>
 
         {/* Category breakdown */}
         {categoryStats.length > 0 && (
-          <Card>
+          <InteractiveCard accentColor={T.maroon}> {/* ✅ Category breakdown — maroon accent */}
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Compliance by Category</CardTitle>
             </CardHeader>
@@ -146,7 +182,7 @@ export function SLAReviewPage() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </InteractiveCard>
         )}
 
         {/* Filters + Table */}
@@ -185,21 +221,26 @@ export function SLAReviewPage() {
             <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
           </div>
         ) : (
-          <Card>
+          <Card
+            style={{
+              borderTop: `4px solid ${T.maroon}`,
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+            }}
+          > {/* ✅ Table card — static maroon accent, no hover lift */}
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Service</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Client</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Time In</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Time Out</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Actual</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">SLA Target</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">% Used</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Status</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">SLA</th>
+                    <tr className="border-b border-border">
+                      <th className="text-left px-4 py-3 text-xs font-bold">Service</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">Client</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">Time In</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">Time Out</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">Actual</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">SLA Target</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">% Used</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold">SLA</th>
                       <th className="px-4 py-3" />
                     </tr>
                   </thead>
@@ -217,7 +258,7 @@ export function SLAReviewPage() {
                         <tr
                           key={t.id}
                           className={cn(
-                            'border-b border-border last:border-0 hover:bg-accent/30 transition-colors',
+                            'border-b border-border last:border-0',
                             t.is_sla_breached && 'row-breach',
                           )}
                         >

@@ -124,7 +124,7 @@ export function TopBar() {
 
         <nav className="hidden sm:flex items-center gap-1.5 text-xs">
           {breadcrumbs.map((crumb, idx) => (
-            <div key={crumb.to} className="flex items-center gap-1.5">
+            <div key={idx} className="flex items-center gap-1.5">
               {idx > 0 && <span className="text-muted-foreground/40 font-semibold">&gt;</span>}
               {crumb.active ? (
                 <span className="font-semibold text-[#580000]">{crumb.label}</span>

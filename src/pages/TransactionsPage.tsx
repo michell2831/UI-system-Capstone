@@ -131,18 +131,18 @@ export function TransactionsPage() {
         ) : (
           <Card>
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto overflow-hidden rounded-[10px] border border-gray-200 shadow-sm">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Service</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Client</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Time In</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Assigned To</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Status</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Documents</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">SLA</th>
-                      <th className="text-left px-4 py-3 text-base font-medium text-muted-foreground">Duration</th>
+                    <tr className="border-b border-border">
+                      <th className="text-left px-4 py-3 text-base font-bold">Service</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">Client</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">Time In</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">Assigned To</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">Status</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">Documents</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">SLA</th>
+                      <th className="text-left px-4 py-3 text-base font-bold">Duration</th>
                       <th className="px-4 py-3" />
                     </tr>
                   </thead>
@@ -158,7 +158,7 @@ export function TransactionsPage() {
                       <tr
                         key={t.id}
                         className={cn(
-                          'border-b border-border last:border-0 hover:bg-accent/30 transition-colors',
+                          'border-b border-border last:border-0',
                           t.is_sla_breached && 'row-breach',
                         )}
                       >

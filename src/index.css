@@ -104,46 +104,67 @@
   }
 }
 
+@layer components {
+  /* Maroon header band — applies to every table in the app */
+  table thead,
+  table thead tr {
+    background-color: #580000 !important;
+  }
+
+  table thead th {
+    color: #ffffff !important;
+    font-weight: 700;
+  }
+}
+
 @layer utilities {
   .sla-compliant {
     background-color: var(--success-bg);
     color: var(--success);
     border: 1px solid rgba(29, 158, 117, 0.3);
   }
+
   .sla-noncompliant {
     background-color: var(--error-bg);
     color: var(--error);
     border: 1px solid rgba(226, 75, 74, 0.3);
   }
+
   .sla-pending {
     background-color: var(--warning-bg);
     color: var(--warning);
     border: 1px solid rgba(186, 117, 23, 0.3);
   }
+
   .row-breach {
     background-color: rgba(226, 75, 74, 0.05);
     border-left: 4px solid var(--error);
   }
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
+
   .page-title {
     font-family: 'DM Serif Display', serif;
     font-size: 24px;
     font-weight: 700;
-    color: var(--pup-primary);
+    color: #000000 !important;
   }
+
   .section-header {
     font-size: 20px;
     font-weight: 700;
     color: var(--pup-primary);
   }
+
   .modal-title {
     font-size: 18px;
     font-weight: 700;
     color: var(--pup-primary);
   }
+
   .date-header {
     background: #fce8e8;
     padding: 4px 12px;
@@ -152,6 +173,7 @@
     font-size: 13px;
     color: var(--pup-primary);
   }
+
   .modal-container {
     background: #fff;
     border-radius: 12px;
@@ -161,18 +183,20 @@
       0 8px 10px -6px rgba(0, 0, 0, .1);
     border: 1px solid #e5e7eb;
   }
+
   @keyframes resultModalPop {
     0% {
       transform: translate(-50%, -48%) scale(0.96);
       opacity: 0;
     }
+
     100% {
       transform: translate(-50%, -50%) scale(1);
       opacity: 1;
     }
   }
+
   .animate-resultModalPop {
     animation: resultModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
-
