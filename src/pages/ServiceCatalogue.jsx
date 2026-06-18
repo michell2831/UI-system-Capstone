@@ -380,18 +380,18 @@ export default function ServiceCatalogue() {
       </Card>
 
       {/* Table scroller */}
-      <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #E2E8F0', mb: 3 }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #E2E8F0', mb: 3, overflow: 'hidden' }}>
         <Table sx={{ minWidth: 980 }}>
           <TableHead>
-            <TableRow sx={{ bgcolor: '#F8FAFC', '& .MuiTableCell-root': { py: 1.5, whiteSpace: 'nowrap' } }}>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', width: 240 }}>SERVICE NAME</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>CLASSIFICATION</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>SLA TARGET</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>RESPONSIBLE UNIT</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>REFERRAL STATUS</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>N/A FLAG</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>LAST UPDATED</TableCell>
-              {!isStaff && <TableCell align="center" sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', width: 140 }}>ACTIONS</TableCell>}
+            <TableRow sx={{ bgcolor: '#580000', '& .MuiTableCell-root': { py: 0.75, px: 2, borderBottom: 'none', whiteSpace: 'nowrap' } }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', width: 240, letterSpacing: '0.08em', textTransform: 'uppercase' }}>SERVICE NAME</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>CLASSIFICATION</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>SLA TARGET</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>RESPONSIBLE UNIT</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>REFERRAL STATUS</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>N/A FLAG</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>LAST UPDATED</TableCell>
+              {!isStaff && <TableCell align="center" sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', width: 140, letterSpacing: '0.08em', textTransform: 'uppercase' }}>ACTIONS</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -402,15 +402,18 @@ export default function ServiceCatalogue() {
                   hover
                   sx={{
                     opacity: svc.active ? 1 : 0.65,
+                    transition: 'background 0.15s ease',
                     '& .MuiTableCell-root': {
-                      py: 1.5,
-                      borderBottom: '1px solid #CBD5E1',
-                      boxShadow: 'inset 0 -1.5px 0 0 rgba(0, 0, 0, 0.04)'
-                    }
+                      py: 0.75,
+                      borderBottom: '1px solid #F1F5F9',
+                      fontSize: '12px',
+                      color: 'text.secondary'
+                    },
+                    '&:hover': { bgcolor: '#F8FAFC' }
                   }}
                 >
                   <TableCell>
-                    <Typography sx={{ fontWeight: 500, fontSize: '0.875rem', lineHeight: 1.2, color: 'text.primary', mb: 0 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: '12px', lineHeight: 1.2, color: 'text.primary', mb: 0 }}>
                       {svc.name}
                     </Typography>
                   </TableCell>
@@ -428,12 +431,12 @@ export default function ServiceCatalogue() {
                     />
                   </TableCell>
                   <TableCell>
-                    <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.8125rem' }}>
+                    <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '12px' }}>
                       {svc.slaTarget || svc.sla}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem' }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '12px' }}>
                       {svc.responsibleUnit || "Quality Assurance"}
                     </Typography>
                   </TableCell>
@@ -471,11 +474,11 @@ export default function ServiceCatalogue() {
                         <Chip label="N/A" size="small" variant="outlined" sx={{ fontWeight: 700, color: 'text.secondary', bgcolor: '#F1F5F9', cursor: 'help' }} />
                       </Tooltip>
                     ) : (
-                      <Typography color="text.disabled">—</Typography>
+                      <Typography sx={{ fontSize: '12px' }} color="text.disabled">—</Typography>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap' }}>
                       {svc.lastUpdated || "—"}
                     </Typography>
                   </TableCell>

@@ -484,7 +484,7 @@ export default function CommitmentWizardModal({ open, onClose, commitmentId, rea
       >
         <DialogTitle sx={{ fontWeight: 500, fontFamily: "'DM Serif Display', Georgia, serif", fontSize: '1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            OPCR Commitment Wizard
+            OPCR Commitment Builder
             {autoSaveStatus && (
               <Typography variant="caption" sx={{ color: autoSaveStatus === 'Save Failed' ? 'error.main' : 'text.secondary', fontWeight: 'normal' }}>
                 ({autoSaveStatus})

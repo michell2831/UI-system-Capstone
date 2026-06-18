@@ -371,16 +371,16 @@ export default function EvaluationPeriods() {
             {/* Main Table Card */}
             <Card sx={{ borderRadius: 2, border: '1px solid #E2E8F0', mb: 3 }}>
 
-                <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
+                <TableContainer component={Paper} sx={{ boxShadow: 'none', overflow: 'hidden' }}>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ bgcolor: '#F8FAFC', '& .MuiTableCell-root': { py: 1.5, whiteSpace: 'nowrap' } }}>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>PERIOD NAME</TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>CYCLE TYPE</TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>START DATE</TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>END DATE</TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>STATUS</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', width: 140 }}>ACTIONS</TableCell>
+                            <TableRow sx={{ bgcolor: '#580000', '& .MuiTableCell-root': { py: 0.75, px: 2, borderBottom: 'none', whiteSpace: 'nowrap' } }}>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>PERIOD NAME</TableCell>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>CYCLE TYPE</TableCell>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>START DATE</TableCell>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>END DATE</TableCell>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>STATUS</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', width: 140, letterSpacing: '0.08em', textTransform: 'uppercase' }}>ACTIONS</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -404,14 +404,18 @@ export default function EvaluationPeriods() {
                                             hover
                                             sx={{
                                                 opacity: isActive ? 1 : 0.7,
+                                                transition: 'background 0.15s ease',
                                                 '& .MuiTableCell-root': {
-                                                    py: 1.5,
-                                                    borderBottom: '1px solid #CBD5E1',
-                                                    boxShadow: 'inset 0 -1.5px 0 0 rgba(0, 0, 0, 0.04)'
-                                                }
+                                                    py: 0.75,
+                                                    px: 2,
+                                                    borderBottom: '1px solid #F1F5F9',
+                                                    fontSize: '12px',
+                                                    color: 'text.secondary'
+                                                },
+                                                '&:hover': { bgcolor: '#F8FAFC' }
                                             }}
                                         >
-                                            <TableCell sx={{ fontWeight: 700, color: '#1E293B' }}>{p.name}</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, fontSize: '12px', color: '#1E293B' }}>{p.name}</TableCell>
                                             <TableCell>
                                                 <Chip
                                                     label={p.type}

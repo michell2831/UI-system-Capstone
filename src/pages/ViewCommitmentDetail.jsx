@@ -131,17 +131,17 @@ export default function ViewCommitmentDetail({ commitmentId, onBack }) {
                 <TableRow>
                   <TableCell sx={{ 
                     textAlign: 'center', 
-                    bgcolor: 'var(--maroon-muted, #f2e8e8)', 
-                    borderRight: '1px solid #CBD5E1',
-                    borderBottom: '1px solid #CBD5E1',
+                    bgcolor: '#580000',
+                    borderRight: '1px solid rgba(255,255,255,0.15)',
+                    borderBottom: '1px solid #580000',
                     width: 45,
-                    py: 1.25
+                    py: 0.75
                   }} />
-                  <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#1E293B', py: 1.25, px: 2, borderRight: '1px solid #E2E8F0', borderBottom: '1px solid #CBD5E1', bgcolor: '#F8FAFC' }}>SERVICE CHARTER</TableCell>
-                  <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#1E293B', py: 1.25, px: 2, borderRight: '1px solid #E2E8F0', borderBottom: '1px solid #CBD5E1', bgcolor: '#F8FAFC' }}>CLASSIFICATION</TableCell>
-                  <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#1E293B', py: 1.25, px: 2, borderRight: '1px solid #E2E8F0', borderBottom: '1px solid #CBD5E1', bgcolor: '#F8FAFC' }}>KPI INDICATOR</TableCell>
-                  <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#1E293B', py: 1.25, px: 2, borderRight: '1px solid #E2E8F0', borderBottom: '1px solid #CBD5E1', bgcolor: '#F8FAFC' }}>CATEGORY</TableCell>
-                  <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#1E293B', py: 1.25, px: 2, borderBottom: '1px solid #CBD5E1', bgcolor: '#F8FAFC' }} align="right">OPCR TARGET VALUE</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.05em', py: 0.75, px: 2, borderRight: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid #580000', bgcolor: '#580000' }}>SERVICE CHARTER</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.05em', py: 0.75, px: 2, borderRight: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid #580000', bgcolor: '#580000' }}>CLASSIFICATION</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.05em', py: 0.75, px: 2, borderRight: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid #580000', bgcolor: '#580000' }}>KPI INDICATOR</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.05em', py: 0.75, px: 2, borderRight: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid #580000', bgcolor: '#580000' }}>CATEGORY</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.05em', py: 0.75, px: 2, borderBottom: '1px solid #580000', bgcolor: '#580000' }} align="right">OPCR TARGET VALUE</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -176,10 +176,10 @@ export default function ViewCommitmentDetail({ commitmentId, onBack }) {
 
                   // Premium interactive cell style helper
                   const getCellStyle = (extra = {}) => ({
-                    py: 1.25,
+                    py: 0.75,
                     px: 2,
-                    borderRight: '1px solid #E2E8F0',
-                    borderBottom: isLastRow ? 'none' : '1px solid #E2E8F0',
+                    borderRight: '1px solid #F8FAFC',
+                    borderBottom: isLastRow ? 'none' : '1px solid #F8FAFC',
                     transition: 'all 0.15s ease',
                     position: 'relative',
                     '&:hover': {
@@ -210,13 +210,13 @@ export default function ViewCommitmentDetail({ commitmentId, onBack }) {
                         sx={{ 
                           textAlign: 'center', 
                           bgcolor: 'var(--maroon-muted, #f2e8e8)', 
-                          borderRight: '1px solid #CBD5E1',
-                          borderBottom: isLastRow ? 'none' : '1px solid #CBD5E1',
+                          borderRight: '1px solid #F1F5F9',
+                          borderBottom: isLastRow ? 'none' : '1px solid #F1F5F9',
                           fontWeight: 700,
-                          fontSize: '0.75rem',
+                          fontSize: '11px',
                           color: 'var(--maroon, #580000)',
                           width: 45,
-                          py: 1.25,
+                          py: 0.75,
                           userSelect: 'none'
                         }}
                       >

@@ -192,9 +192,6 @@ export default function KPIStandards() {
       err.name = "KPI target name must not exceed 150 characters.";
     }
 
-    if (!unit || !unit.trim()) {
-      err.unit = "Unit is required.";
-    }
 
     if (!serviceId) {
       err.serviceId = "Please link a Service Charter.";
@@ -449,16 +446,16 @@ export default function KPIStandards() {
       </Card>
 
       {/* Table Container */}
-      <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #E2E8F0', mb: 3 }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #E2E8F0', mb: 3, overflow: 'hidden' }}>
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: '#F8FAFC', '& .MuiTableCell-root': { py: 1.5, whiteSpace: 'nowrap' } }}>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', width: '250px' }}>KPI NAME</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>CATEGORY</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>TARGET VALUE</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>LINKED SERVICE</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>REFERRAL STATUS</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', width: 140 }}>ACTIONS</TableCell>
+            <TableRow sx={{ bgcolor: '#580000', '& .MuiTableCell-root': { py: 0.75, px: 2, borderBottom: 'none', whiteSpace: 'nowrap' } }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', width: '250px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>KPI NAME</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>CATEGORY</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>TARGET VALUE</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>LINKED SERVICE</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>REFERRAL STATUS</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', width: 140, letterSpacing: '0.08em', textTransform: 'uppercase' }}>ACTIONS</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -472,15 +469,19 @@ export default function KPIStandards() {
                     hover
                     sx={{
                       opacity: kpi.active ? 1 : 0.6,
+                      transition: 'background 0.15s ease',
                       '& .MuiTableCell-root': {
-                        py: 1.5,
-                        borderBottom: '1px solid #CBD5E1',
-                        boxShadow: 'inset 0 -1.5px 0 0 rgba(0, 0, 0, 0.04)'
-                      }
+                        py: 0.75,
+                        px: 2,
+                        borderBottom: '1px solid #F1F5F9',
+                        fontSize: '12px',
+                        color: 'text.secondary'
+                      },
+                      '&:hover': { bgcolor: '#F8FAFC' }
                     }}
                   >
                     <TableCell>
-                      <Typography sx={{ fontWeight: 500, fontSize: '0.875rem', lineHeight: 1.2, color: 'text.primary', mb: 0 }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '12px', lineHeight: 1.2, color: 'text.primary', mb: 0 }}>
                         {kpi.name}
                       </Typography>
                     </TableCell>
@@ -497,10 +498,10 @@ export default function KPIStandards() {
                         }}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: "text.primary", fontSize: '0.875rem' }}>
+                    <TableCell sx={{ fontWeight: 700, color: "text.primary", fontSize: '12px' }}>
                       {kpi.category === "Quality" ? `${Number(kpi.target_value)}%` : formatDuration(kpi.target_value)}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.8125rem', color: 'text.secondary', fontWeight: 500 }}>
+                    <TableCell sx={{ fontSize: '12px', color: 'text.secondary', fontWeight: 500 }}>
                       {svc?.name || "Unlinked Service"}
                     </TableCell>
                     <TableCell>

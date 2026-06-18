@@ -665,7 +665,7 @@ export default function HolidayCalendar() {
                 display: "grid",
                 gridTemplateColumns: "repeat(7, 1fr)",
                 mb: 1.5,
-                borderBottom: "1px solid #F1F5F9",
+                borderBottom: "1px solid #F8FAFC",
                 pb: 1,
                 textAlign: "center"
               }}

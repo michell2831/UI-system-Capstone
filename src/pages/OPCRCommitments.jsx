@@ -29,7 +29,6 @@ import {
   EditNote as DraftIcon,
   CalendarToday as CalendarIcon,
   AccessTime as TimeIcon,
-  AssignmentTurnedIn as RegistryIcon,
   Search as SearchIcon
 } from "@mui/icons-material";
 import { useAppStore } from "../store/useAppStore";
@@ -67,20 +66,16 @@ export default function OPCRCommitments() {
     setAnchorEl(null);
   };
 
-  const handleEditClick = () => {
-    if (selectedCommitment) {
-      setSelectedCommitmentId(selectedCommitment.id);
-      setWizardReadOnly(false);
-      setShowWizard(true);
-    }
+  const handleEditClick = (commitment) => {
+    setSelectedCommitmentId(commitment.id);
+    setWizardReadOnly(false);
+    setShowWizard(true);
     handleMenuClose();
   };
 
-  const handleViewClick = () => {
-    if (selectedCommitment) {
-      setViewCommitmentId(selectedCommitment.id);
-      setShowViewDetails(true);
-    }
+  const handleViewClick = (commitment) => {
+    setViewCommitmentId(commitment.id);
+    setShowViewDetails(true);
     handleMenuClose();
   };
 
@@ -186,11 +181,11 @@ export default function OPCRCommitments() {
         <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#F8FAFC', '& .MuiTableCell-root': { py: 1.5, whiteSpace: 'nowrap' } }}>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', pl: 3 }}>PERIOD</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>STATUS</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>LAST UPDATED</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', width: 140 }}>ACTIONS</TableCell>
+              <TableRow sx={{ bgcolor: '#580000', '& .MuiTableCell-root': { py: 0.75, borderBottom: 'none', whiteSpace: 'nowrap' } }}>
+                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase', pl: 3 }}>PERIOD</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>STATUS</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>LAST UPDATED</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 700, fontSize: '10px', color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase', width: 200 }}>ACTIONS</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -219,15 +214,13 @@ export default function OPCRCommitments() {
                       hover
                       sx={{
                         borderLeft: `4px solid ${isLocked ? '#10B981' : '#F59E0B'}`,
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          bgcolor: 'rgba(248, 250, 252, 0.8)',
-                          transform: 'translateX(2px)'
-                        },
+                        transition: 'background 0.15s ease',
+                        '&:hover': { bgcolor: '#F8FAFC' },
                         '& .MuiTableCell-root': {
-                          py: 2,
-                          borderBottom: '1px solid #CBD5E1',
-                          boxShadow: 'inset 0 -1.5px 0 0 rgba(0, 0, 0, 0.02)'
+                          py: 0.75,
+                          borderBottom: '1px solid #F1F5F9',
+                          fontSize: '12px',
+                          color: 'text.secondary'
                         }
                       }}
                     >
@@ -247,7 +240,7 @@ export default function OPCRCommitments() {
                           </Box>
                           <Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography sx={{ fontWeight: 700, color: '#1E293B', fontSize: '0.9rem' }}>
+                              <Typography sx={{ fontWeight: 600, color: '#1E293B', fontSize: '12px' }}>
                                 {periodName}
                               </Typography>
                               {cycleType && (
@@ -298,28 +291,48 @@ export default function OPCRCommitments() {
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
                           <TimeIcon sx={{ fontSize: 16, opacity: 0.7 }} />
-                          <Typography sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                          <Typography sx={{ fontWeight: 500, fontSize: '12px' }}>
                             {updatedFmt}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell align="center">
-                        <Tooltip title="Actions" arrow>
-                          <IconButton
+                        {isLocked ? (
+                          /* Locked: plain maroon View text button */
+                          <Button
                             size="small"
-                            onClick={(e) => handleMenuOpen(e, c)}
+                            onClick={() => handleViewClick(c)}
                             sx={{
-                              color: 'text.secondary',
-                              '&:hover': {
-                                bgcolor: '#F1F5F9',
-                              },
-                              width: 32,
-                              height: 32
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              color: '#800000',
+                              letterSpacing: '0.02em',
+                              '&:hover': { bgcolor: 'rgba(128,0,0,0.06)' },
+                              borderRadius: '8px',
+                              px: 2,
+                              py: 0.5
                             }}
                           >
-                            <MoreVertIcon sx={{ fontSize: 20 }} />
-                          </IconButton>
-                        </Tooltip>
+                            View
+                          </Button>
+                        ) : (
+                          /* Draft: 3-dot menu */
+                          <Tooltip title="Actions" arrow>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuOpen(e, c)}
+                              sx={{
+                                color: 'text.secondary',
+                                '&:hover': { bgcolor: '#F1F5F9' },
+                                width: 32,
+                                height: 32
+                              }}
+                            >
+                              <MoreVertIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
@@ -358,14 +371,13 @@ export default function OPCRCommitments() {
           }}
         />
       )}
-      {/* Actions Menu */}
+
+      {/* 3-dot Actions Menu — for Draft commitments only */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        TransitionProps={{
-          onExited: () => setSelectedCommitment(null)
-        }}
+        TransitionProps={{ onExited: () => setSelectedCommitment(null) }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         slotProps={{
@@ -377,23 +389,20 @@ export default function OPCRCommitments() {
               mt: 0.5,
               border: '1px solid rgba(0,0,0,0.08)',
               boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)',
-              '& .MuiMenuItem-root': {
-                py: 1.2,
-                px: 2,
-              }
+              '& .MuiMenuItem-root': { py: 1.2, px: 2 }
             }
           }
         }}
       >
-        <MenuItem onClick={handleViewClick}>
+        <MenuItem onClick={() => handleViewClick(selectedCommitment)}>
           <VisibilityIcon sx={{ mr: 1.5, color: '#0284c7', fontSize: 18 }} />
           <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>View Commitment</Typography>
         </MenuItem>
 
-        {selectedCommitment && !(selectedCommitment.status === "Locked" || isStaff) && (
+        {selectedCommitment && !isStaff && (
           <>
             <Divider sx={{ my: 0.5 }} />
-            <MenuItem onClick={handleEditClick}>
+            <MenuItem onClick={() => handleEditClick(selectedCommitment)}>
               <EditIcon sx={{ mr: 1.5, color: '#800000', fontSize: 18 }} />
               <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Edit Draft</Typography>
             </MenuItem>

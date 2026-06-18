@@ -7,7 +7,8 @@ import {
   Typography,
   TextField,
   MenuItem,
-  Box
+  Box,
+  InputAdornment
 } from '@mui/material';
 
 /**
@@ -109,47 +110,34 @@ export default function KPIModal({
 
           {/* Target Values */}
           {category === 'Quality' ? (
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField
-                label="Target Value"
-                placeholder="e.g. 95"
-                type="number"
-                inputProps={{ step: 'any', min: 0, max: 100 }}
-                required
-                value={target}
-                error={!!errors.target}
-                helperText={errors.target || ''}
-                onChange={(e) => {
-                  setTarget(e.target.value);
-                  setErrors(prev => ({ ...prev, target: '' }));
-                }}
-                size="small"
-                sx={{ '& .MuiFormLabel-asterisk': { color: '#ef4444' } }}
-              />
-              <TextField
-                select
-                label="Unit"
-                required
-                fullWidth
-                size="small"
-                value={unit}
-                onChange={(e) => {
-                  setUnit(e.target.value);
-                  setErrors(prev => ({ ...prev, unit: '' }));
-                }}
-                error={!!errors.unit}
-                helperText={errors.unit || ''}
-                sx={{ '& .MuiFormLabel-asterisk': { color: '#ef4444' } }}
-              >
-                <MenuItem value="%">Percentage (%)</MenuItem>
-              </TextField>
-            </Box>
+            <TextField
+              label="Target Value"
+              placeholder="e.g. 95"
+              type="number"
+              inputProps={{ step: 'any', min: 0, max: 100 }}
+              required
+              fullWidth
+              value={target}
+              error={!!errors.target}
+              helperText={errors.target || ''}
+              onChange={(e) => {
+                setTarget(e.target.value);
+                setErrors(prev => ({ ...prev, target: '' }));
+              }}
+              size="small"
+              slotProps={{
+                input: {
+                  endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                },
+              }}
+              sx={{ '& .MuiFormLabel-asterisk': { color: '#ef4444' } }}
+            />
           ) : (
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 1 }}>
                 TARGET VALUE <span style={{ color: '#ef4444' }}>*</span>
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5, mb: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5 }}>
                 <TextField
                   label="Days"
                   placeholder="Days"
@@ -191,28 +179,10 @@ export default function KPIModal({
                 />
               </Box>
               {errors.target && (
-                <Typography variant="caption" color="error" sx={{ mt: 1, mb: 2, display: 'block', fontWeight: 500 }}>
+                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', fontWeight: 500 }}>
                   {errors.target}
                 </Typography>
               )}
-              <TextField
-                select
-                label="Unit"
-                required
-                fullWidth
-                size="small"
-                value={unit}
-                onChange={(e) => {
-                  setUnit(e.target.value);
-                  setErrors(prev => ({ ...prev, unit: '' }));
-                }}
-                error={!!errors.unit}
-                helperText={errors.unit || ''}
-                sx={{ '& .MuiFormLabel-asterisk': { color: '#ef4444' } }}
-              >
-                <MenuItem value=" Days">Days</MenuItem>
-                <MenuItem value=" Mins">Minutes</MenuItem>
-              </TextField>
             </Box>
           )}
 
