@@ -232,13 +232,13 @@ export function SLAReviewPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left px-4 py-3 text-xs font-bold">Service</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">Client</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">Time In</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">Time Out</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">Actual</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">SLA Target</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">% Used</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold min-w-[120px]">Service</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold hidden md:table-cell">Client</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold hidden md:table-cell">Time In</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">Time Out</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">Actual</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">SLA Target</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">% Used</th>
                       <th className="text-left px-4 py-3 text-xs font-bold">Status</th>
                       <th className="text-left px-4 py-3 text-xs font-bold">SLA</th>
                       <th className="px-4 py-3" />
@@ -266,18 +266,18 @@ export function SLAReviewPage() {
                             <p className="font-medium truncate max-w-[180px]" title={t.service_name}>{t.service_name}</p>
                             <p className="text-xs text-muted-foreground">{t.service_category}</p>
                           </td>
-                          <td className="px-4 py-3 text-foreground">{t.client_name}</td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatDateTime(t.time_in)}</td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                          <td className="px-4 py-3 text-foreground hidden md:table-cell">{t.client_name}</td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap hidden md:table-cell">{formatDateTime(t.time_in)}</td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap hidden lg:table-cell">
                             {t.time_out ? formatDateTime(t.time_out) : '—'}
                           </td>
-                          <td className="px-4 py-3 text-xs font-medium text-foreground whitespace-nowrap">
+                          <td className="px-4 py-3 text-xs font-medium text-foreground whitespace-nowrap hidden lg:table-cell">
                             {t.processing_time_seconds !== null ? formatDuration(t.processing_time_seconds) : '—'}
                           </td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap hidden lg:table-cell">
                             {formatDuration(t.sla_target_seconds)}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3 hidden lg:table-cell">
                             <div className="flex items-center gap-2">
                               <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                                 <div
