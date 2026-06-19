@@ -109,69 +109,121 @@ export function SLAReviewPage() {
         </Box>
 
         {/* Summary row */}
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 6, md: 3 }}>
-            <InteractiveCard accentColor={T.maroon}>
-              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
-                <TrendingUp style={{ width: 28, height: 28, color: '#580000' }} />
-                <Box>
-                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: 'text.primary', lineHeight: 1.1 }}>
-                    {complianceRate}%
-                  </Typography>
-                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
-                    Compliance Rate
-                  </Typography>
+        <Grid container spacing={3}>
+          {/* Compliance Rate — green */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{
+              bgcolor: '#FFFFFF', borderRadius: '8px',
+              borderTop: '4px solid #1D9E75', borderLeft: 'none', borderRight: 'none', borderBottom: 'none',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)', height: '100%',
+              display: 'flex', flexDirection: 'column',
+              transition: 'all 0.2s ease', cursor: 'pointer',
+              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', borderColor: '#D1D5DB' }
+            }}>
+              <CardContent sx={{ p: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: '20px !important' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>Compliance Rate</Typography>
+                      <Typography sx={{ fontSize: '28px', fontWeight: 700, color: 'text.primary', mt: '4px', lineHeight: 1.1 }}>
+                        {complianceRate}%
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.2, borderRadius: '8px', color: '#1D9E75', bgcolor: 'rgba(29,158,117,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <TrendingUp style={{ width: 20, height: 20 }} />
+                  </Box>
                 </Box>
               </CardContent>
-            </InteractiveCard>
+            </Card>
           </Grid>
 
-          <Grid size={{ xs: 6, md: 3 }}>
-            <InteractiveCard accentColor={T.green}>
-              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
-                <CheckCircle2 style={{ width: 28, height: 28, color: T.green }} />
-                <Box>
-                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: T.green, lineHeight: 1.1 }}>
-                    {completed.filter((t) => t.sla_status === 'compliant').length}
-                  </Typography>
-                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
-                    Compliant
-                  </Typography>
+          {/* Compliant — green */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{
+              bgcolor: '#FFFFFF', borderRadius: '8px',
+              borderTop: '4px solid #1D9E75', borderLeft: 'none', borderRight: 'none', borderBottom: 'none',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)', height: '100%',
+              display: 'flex', flexDirection: 'column',
+              transition: 'all 0.2s ease', cursor: 'pointer',
+              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', borderColor: '#D1D5DB' }
+            }}>
+              <CardContent sx={{ p: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: '20px !important' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>Compliant</Typography>
+                      <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#1D9E75', mt: '4px', lineHeight: 1.1 }}>
+                        {completed.filter((t) => t.sla_status === 'compliant').length}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.2, borderRadius: '8px', color: '#1D9E75', bgcolor: 'rgba(29,158,117,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <CheckCircle2 style={{ width: 20, height: 20 }} />
+                  </Box>
                 </Box>
               </CardContent>
-            </InteractiveCard>
+            </Card>
           </Grid>
 
-          <Grid size={{ xs: 6, md: 3 }}>
-            <InteractiveCard accentColor={T.red}>
-              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
-                <XCircle style={{ width: 28, height: 28, color: T.red }} />
-                <Box>
-                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: T.red, lineHeight: 1.1 }}>
-                    {completed.filter((t) => t.sla_status === 'non_compliant').length}
-                  </Typography>
-                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
-                    Non-Compliant
-                  </Typography>
+          {/* Non-Compliant — red */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{
+              bgcolor: '#FFFFFF', borderRadius: '8px',
+              borderTop: '4px solid #E24B4A', borderLeft: 'none', borderRight: 'none', borderBottom: 'none',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)', height: '100%',
+              display: 'flex', flexDirection: 'column',
+              transition: 'all 0.2s ease', cursor: 'pointer',
+              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', borderColor: '#D1D5DB' }
+            }}>
+              <CardContent sx={{ p: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: '20px !important' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>Non-Compliant</Typography>
+                      <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#E24B4A', mt: '4px', lineHeight: 1.1 }}>
+                        {completed.filter((t) => t.sla_status === 'non_compliant').length}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.2, borderRadius: '8px', color: '#E24B4A', bgcolor: 'rgba(226,75,74,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <XCircle style={{ width: 20, height: 20 }} />
+                  </Box>
                 </Box>
               </CardContent>
-            </InteractiveCard>
+            </Card>
           </Grid>
 
-          <Grid size={{ xs: 6, md: 3 }}>
-            <InteractiveCard accentColor={T.red}>
-              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
-                <AlertTriangle style={{ width: 28, height: 28, color: T.red }} />
-                <Box>
-                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: T.red, lineHeight: 1.1 }}>
-                    {completed.filter((t) => t.is_sla_breached).length}
-                  </Typography>
-                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
-                    SLA Breached
-                  </Typography>
+          {/* SLA Breached — warning orange */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{
+              bgcolor: '#FFFFFF', borderRadius: '8px',
+              borderTop: '4px solid #BA7517', borderLeft: 'none', borderRight: 'none', borderBottom: 'none',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)', height: '100%',
+              display: 'flex', flexDirection: 'column',
+              transition: 'all 0.2s ease', cursor: 'pointer',
+              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', borderColor: '#D1D5DB' }
+            }}>
+              <CardContent sx={{ p: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: '20px !important' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>SLA Breached</Typography>
+                      <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#BA7517', mt: '4px', lineHeight: 1.1 }}>
+                        {completed.filter((t) => t.is_sla_breached).length}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.2, borderRadius: '8px', color: '#BA7517', bgcolor: 'rgba(186,117,23,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <AlertTriangle style={{ width: 20, height: 20 }} />
+                  </Box>
                 </Box>
               </CardContent>
-            </InteractiveCard>
+            </Card>
           </Grid>
         </Grid>
 

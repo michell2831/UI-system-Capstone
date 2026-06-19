@@ -237,7 +237,9 @@ export async function updateTransactionStatusApi(
 
   if (dto.status === 'completed' && timeOut) {
     // Simple computation: elapsed seconds from time_in to time_out
-    processingTime = elapsedSeconds(txn.time_in)
+    const start = new Date(txn.time_in).getTime()
+    const end = new Date(timeOut).getTime()
+    processingTime = Math.max(0, Math.round((end - start) / 1000))
     slaStatus = computeSlaStatus(processingTime, txn.sla_target_seconds)
     isBreach = isSlaBreached(processingTime, txn.sla_target_seconds)
   }
@@ -250,6 +252,7 @@ export async function updateTransactionStatusApi(
     sla_status: slaStatus,
     is_sla_breached: isBreach,
     is_locked: dto.status === 'completed', // EMS-025: lock atomically on completion
+    override_document_name: dto.override_document_name || txn.override_document_name,
     updated_at: now,
   }
   _transactions[idx] = updated
@@ -380,10 +383,11 @@ export async function getDashboardStatsApi(officeId?: string): Promise<Dashboard
   }
 }
 
-export async function overrideSlaApi(
+export async function overrideTimeInApi(
   id: string,
+  newTimeIn: string,
   reason: string,
-  documentName: string,
+  documentName: string | null,
   actingUser: User,
 ): Promise<Transaction> {
   await delay()
@@ -392,14 +396,31 @@ export async function overrideSlaApi(
 
   const txn = _transactions[idx]
   const now = new Date().toISOString()
+  const originalTimeIn = txn.original_time_in || txn.time_in
+
+  // If already completed, recalculate SLA processing time and SLA status
+  let processingTime = txn.processing_time_seconds
+  let slaStatus = txn.sla_status
+  let isBreach = txn.is_sla_breached
+
+  if (txn.status === 'completed' && txn.time_out) {
+    const start = new Date(newTimeIn).getTime()
+    const end = new Date(txn.time_out).getTime()
+    processingTime = Math.max(0, Math.round((end - start) / 1000))
+    slaStatus = computeSlaStatus(processingTime, txn.sla_target_seconds)
+    isBreach = isSlaBreached(processingTime, txn.sla_target_seconds)
+  }
 
   const updated: Transaction = {
     ...txn,
-    sla_status: 'overridden',
-    is_sla_breached: false,
+    time_in: newTimeIn,
+    original_time_in: originalTimeIn,
     is_overridden: true,
     override_reason: reason,
-    override_document_name: documentName,
+    override_document_name: documentName || undefined,
+    processing_time_seconds: processingTime,
+    sla_status: slaStatus,
+    is_sla_breached: isBreach,
     updated_at: now,
   }
 
@@ -413,12 +434,51 @@ export async function overrideSlaApi(
     new_status: txn.status,
     documentary_old: txn.documentary_status,
     documentary_new: txn.documentary_status,
-    old_value: txn.sla_status,
-    new_value: 'overridden',
+    old_value: originalTimeIn,
+    new_value: newTimeIn,
     changed_by: actingUser.id,
     changed_by_name: actingUser.name,
     changed_at: now,
-    remarks: `SLA Override: ${reason} (Justification: ${documentName})`,
+    remarks: `Time-In Overridden: Changed from ${originalTimeIn} to ${newTimeIn}. Reason: ${reason}${documentName ? ` (Doc: ${documentName})` : ' (Pending Document)'}`,
+  })
+
+  return updated
+}
+
+export async function uploadOverrideDocumentApi(
+  id: string,
+  documentName: string,
+  actingUser: User,
+): Promise<Transaction> {
+  await delay()
+  const idx = _transactions.findIndex((t) => t.id === id)
+  if (idx === -1) throw new Error('Transaction not found')
+
+  const txn = _transactions[idx]
+  const now = new Date().toISOString()
+
+  const updated: Transaction = {
+    ...txn,
+    override_document_name: documentName,
+    updated_at: now,
+  }
+
+  _transactions[idx] = updated
+
+  _history.push({
+    id: `h-${Date.now()}`,
+    transaction_id: id,
+    action_type: 'REMARKS_UPDATE',
+    old_status: txn.status,
+    new_status: txn.status,
+    documentary_old: txn.documentary_status,
+    documentary_new: txn.documentary_status,
+    old_value: txn.override_document_name || 'None',
+    new_value: documentName,
+    changed_by: actingUser.id,
+    changed_by_name: actingUser.name,
+    changed_at: now,
+    remarks: `Supporting document uploaded: ${documentName}`,
   })
 
   return updated

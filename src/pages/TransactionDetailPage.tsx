@@ -9,7 +9,8 @@ import { useAuth } from '@/auth/AuthContext'
 import {
   getTransactionApi, getTransactionHistoryApi,
   updateTransactionStatusApi, updateDocumentaryStatusApi,
-  assignTransactionApi, getUsersApi, overrideSlaApi,
+  assignTransactionApi, getUsersApi, overrideTimeInApi,
+  uploadOverrideDocumentApi,
 } from '@/api/mockApi'
 import type { Transaction, TransactionStatusHistory, User, TransactionStatus, DocumentaryStatus, ActionType } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
@@ -24,6 +25,17 @@ import {
 } from '@mui/material'
 
 const STATUS_FLOW: TransactionStatus[] = ['pending', 'in_progress', 'completed']
+
+function formatToLocalDatetimeString(isoString: string): string {
+  try {
+    const date = new Date(isoString)
+    const tzoffset = date.getTimezoneOffset() * 60000 // offset in milliseconds
+    const localISOTime = (new Date(date.getTime() - tzoffset)).toISOString().slice(0, 16)
+    return localISOTime
+  } catch {
+    return ''
+  }
+}
 
 function StatusStep({ status, current, completed }: { status: TransactionStatus; current: TransactionStatus; completed: boolean }) {
   const labels = { pending: 'Pending', in_progress: 'In Progress', completed: 'Completed' }
@@ -62,11 +74,14 @@ export function TransactionDetailPage() {
   const [docRemarks, setDocRemarks] = useState('')
   const [updating, setUpdating] = useState(false)
 
-  // SLA Manual Override state
+  // SLA / Time-In Manual Override state
   const [overrideModalOpen, setOverrideModalOpen] = useState(false)
+  const [overrideTimeIn, setOverrideTimeIn] = useState('')
   const [overrideReason, setOverrideReason] = useState('')
   const [overrideFile, setOverrideFile] = useState<File | null>(null)
   const [submittingOverride, setSubmittingOverride] = useState(false)
+  const [uploadingInlineDoc, setUploadingInlineDoc] = useState(false)
+  const [completionFile, setCompletionFile] = useState<File | null>(null)
 
   const { confirm, showResult } = useModals()
 
@@ -80,13 +95,15 @@ export function TransactionDetailPage() {
   }
 
   const handleOverrideSubmit = async () => {
-    if (!txn || !user || !overrideReason.trim() || !overrideFile) return
+    if (!txn || !user || !overrideTimeIn || !overrideReason.trim()) return
     setSubmittingOverride(true)
     try {
-      const updated = await overrideSlaApi(
+      const isoTimeIn = new Date(overrideTimeIn).toISOString()
+      const updated = await overrideTimeInApi(
         txn.id,
+        isoTimeIn,
         overrideReason.trim(),
-        overrideFile.name,
+        overrideFile ? overrideFile.name : null,
         user
       )
       setTxn(updated)
@@ -97,17 +114,41 @@ export function TransactionDetailPage() {
       setOverrideFile(null)
       showResult({
         type: 'success',
-        title: 'SLA Overridden',
-        message: 'This transaction SLA compliance status has been overridden successfully.',
+        title: 'Time-In Overridden',
+        message: 'Transaction Time-In and SLA have been updated successfully.',
       })
     } catch (err) {
       showResult({
         type: 'error',
         title: 'Error',
-        message: err instanceof Error ? err.message : 'Failed to override SLA',
+        message: err instanceof Error ? err.message : 'Failed to override Time-In',
       })
     } finally {
       setSubmittingOverride(false)
+    }
+  }
+
+  const handleInlineDocUpload = async (file: File) => {
+    if (!txn || !user) return
+    setUploadingInlineDoc(true)
+    try {
+      const updated = await uploadOverrideDocumentApi(txn.id, file.name, user)
+      setTxn(updated)
+      const h = await getTransactionHistoryApi(txn.id)
+      setHistory(h)
+      showResult({
+        type: 'success',
+        title: 'Document Uploaded',
+        message: 'Supporting document has been attached to the override successfully.',
+      })
+    } catch (err) {
+      showResult({
+        type: 'error',
+        title: 'Error',
+        message: err instanceof Error ? err.message : 'Failed to upload document',
+      })
+    } finally {
+      setUploadingInlineDoc(false)
     }
   }
 
@@ -136,13 +177,18 @@ export function TransactionDetailPage() {
         try {
           const updated = await updateTransactionStatusApi(
             txn.id,
-            { status: newStatus, remarks: statusRemarks || undefined },
+            { 
+              status: newStatus, 
+              remarks: statusRemarks || undefined,
+              override_document_name: completionFile ? completionFile.name : undefined
+            },
             user
           )
           setTxn(updated)
           const h = await getTransactionHistoryApi(txn.id)
           setHistory(h)
           setStatusRemarks('')
+          setCompletionFile(null)
           showResult({
             type: 'success',
             title: 'Success!',
@@ -430,9 +476,57 @@ export function TransactionDetailPage() {
                         }
                       }}
                     />
+
+                    {nextStatus === 'completed' && txn.is_overridden && !txn.override_document_name && (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1, p: 2, bgcolor: '#FCEBEB', border: '1px solid rgba(226, 75, 74, 0.15)', borderRadius: '8px' }}>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#E24B4A', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <AlertTriangle style={{ width: 14, height: 14 }} />
+                          Supporting Document Required
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#E24B4A', lineHeight: 1.3 }}>
+                          This transaction has a Time-In override. You must upload a supporting document to mark it as completed.
+                        </Typography>
+                        <Box 
+                          sx={{
+                            border: '2px dashed #E24B4A',
+                            borderRadius: '8px',
+                            p: 2,
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            bgcolor: 'rgba(226, 75, 74, 0.02)',
+                            '&:hover': { bgcolor: 'rgba(226, 75, 74, 0.05)' }
+                          }}
+                        >
+                          <input
+                            type="file"
+                            id="completion-doc-upload"
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              width: '100%',
+                              height: '100%',
+                              opacity: 0,
+                              cursor: 'pointer',
+                            }}
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files.length > 0) {
+                                setCompletionFile(e.target.files[0])
+                              }
+                            }}
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          />
+                          <FileUp style={{ width: 24, height: 24, color: '#E24B4A', margin: '0 auto 6px' }} />
+                          <Typography sx={{ fontSize: '11px', fontWeight: 600, color: '#E24B4A' }}>
+                            {completionFile ? completionFile.name : 'Select supporting document...'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+
                     <Button
                       onClick={() => triggerStatusUpdate(nextStatus)}
-                      disabled={updating}
+                      disabled={updating || (nextStatus === 'completed' && txn.is_overridden && !txn.override_document_name && !completionFile)}
                       variant="contained"
                       sx={{
                         bgcolor: nextStatus === 'completed' ? '#1D9E75' : '#580000',
@@ -443,6 +537,10 @@ export function TransactionDetailPage() {
                         px: 3,
                         '&:hover': {
                           bgcolor: nextStatus === 'completed' ? '#15805d' : '#7a0c0c',
+                        },
+                        '&:disabled': {
+                          bgcolor: '#E5E7EB',
+                          color: '#9CA3AF'
                         }
                       }}
                       startIcon={nextStatus === 'in_progress' ? <RotateCcw style={{ width: 16, height: 16 }} /> : <CheckCircle2 style={{ width: 16, height: 16 }} />}
@@ -585,19 +683,74 @@ export function TransactionDetailPage() {
                 <SLABadge status={txn.sla_status} isBreached={txn.is_sla_breached} />
 
                 {txn.is_overridden && (
-                  <Box sx={{ p: 2, bgcolor: 'rgba(37, 99, 235, 0.04)', border: '1px solid rgba(37, 99, 235, 0.15)', borderRadius: '8px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ p: 2, bgcolor: 'rgba(37, 99, 235, 0.04)', border: '1px solid rgba(37, 99, 235, 0.15)', borderRadius: '8px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     <Typography sx={{ fontWeight: 700, color: '#1E3A8A', display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '12px' }}>
                       <ShieldAlert style={{ width: 14, height: 14, color: '#2563EB' }} />
-                      Manual Override Info
+                      Time-In Override Info
                     </Typography>
                     <Typography sx={{ fontSize: '11.5px', color: '#1E3A8A' }}>
                       <span style={{ fontWeight: 600 }}>Reason:</span> {txn.override_reason}
                     </Typography>
-                    <Typography sx={{ fontSize: '11.5px', color: '#1E3A8A', display: 'flex', alignItems: 'center', gap: 0.5, mt: '2px' }}>
-                      <FileText style={{ width: 12, height: 12, color: '#3B82F6' }} />
-                      <span style={{ fontWeight: 600 }}>Document:</span>
-                      <span style={{ textDecoration: 'underline', fontWeight: 500 }}>{txn.override_document_name}</span>
+                    {txn.original_time_in && (
+                      <Typography sx={{ fontSize: '11.5px', color: '#1E3A8A' }}>
+                        <span style={{ fontWeight: 600 }}>Original Time In:</span> {formatDateTime(txn.original_time_in)}
+                      </Typography>
+                    )}
+                    <Typography sx={{ fontSize: '11.5px', color: '#1E3A8A' }}>
+                      <span style={{ fontWeight: 600 }}>Corrected Time In:</span> {formatDateTime(txn.time_in)}
                     </Typography>
+
+                    <Box sx={{ borderTop: '1px dashed rgba(37, 99, 235, 0.15)', pt: 1, mt: 0.5 }}>
+                      {txn.override_document_name ? (
+                        <Typography sx={{ fontSize: '11.5px', color: '#1E3A8A', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <FileText style={{ width: 12, height: 12, color: '#3B82F6' }} />
+                          <span style={{ fontWeight: 600 }}>Document:</span>
+                          <span style={{ textDecoration: 'underline', fontWeight: 500 }}>{txn.override_document_name}</span>
+                        </Typography>
+                      ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Typography sx={{ fontSize: '11px', color: '#D97706', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <AlertTriangle style={{ width: 12, height: 12, color: '#D97706' }} />
+                            Missing supporting document
+                          </Typography>
+                          {!txn.is_locked && (
+                            <Box sx={{ position: 'relative' }}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                component="label"
+                                disabled={uploadingInlineDoc}
+                                startIcon={<FileUp style={{ width: 12, height: 12 }} />}
+                                sx={{
+                                  textTransform: 'none',
+                                  fontSize: '10.5px',
+                                  py: 0.5,
+                                  px: 1.5,
+                                  borderColor: '#2563EB',
+                                  color: '#2563EB',
+                                  '&:hover': {
+                                    borderColor: '#1D4ED8',
+                                    bgcolor: 'rgba(37, 99, 235, 0.05)'
+                                  }
+                                }}
+                              >
+                                {uploadingInlineDoc ? 'Uploading...' : 'Upload Document Now'}
+                                <input
+                                  type="file"
+                                  hidden
+                                  onChange={(e) => {
+                                    if (e.target.files && e.target.files.length > 0) {
+                                      handleInlineDocUpload(e.target.files[0])
+                                    }
+                                  }}
+                                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                />
+                              </Button>
+                            </Box>
+                          )}
+                        </Box>
+                      )}
+                    </Box>
                   </Box>
                 )}
 
@@ -639,13 +792,16 @@ export function TransactionDetailPage() {
                   </Typography>
                 )}
 
-                {canModify && !txn.is_overridden && (
+                {canModify && (
                   <Box sx={{ pt: 2, borderTop: '1px solid #F3F4F6', mt: 1 }}>
                     <Button
                       variant="outlined"
                       size="small"
                       fullWidth
-                      onClick={() => setOverrideModalOpen(true)}
+                      onClick={() => {
+                        setOverrideTimeIn(formatToLocalDatetimeString(txn.time_in))
+                        setOverrideModalOpen(true)
+                      }}
                       startIcon={<ShieldAlert style={{ width: 14, height: 14 }} />}
                       sx={{
                         textTransform: 'none',
@@ -659,7 +815,7 @@ export function TransactionDetailPage() {
                         }
                       }}
                     >
-                      Manual SLA Override
+                      {txn.is_overridden ? 'Adjust Time-In Override' : 'Manual Time-In Override'}
                     </Button>
                   </Box>
                 )}
@@ -763,7 +919,7 @@ export function TransactionDetailPage() {
         </Grid>
       </Box>
 
-      {/* SLA Manual Override Modal */}
+      {/* Time-In Manual Override Modal */}
       <Dialog 
         open={overrideModalOpen} 
         onClose={() => setOverrideModalOpen(false)}
@@ -777,29 +933,39 @@ export function TransactionDetailPage() {
       >
         <DialogTitle sx={{ p: 0, mb: 1, fontWeight: 700, fontSize: '18px', color: '#580000', display: 'flex', alignItems: 'center', gap: 1 }}>
           <ShieldAlert style={{ width: 20, height: 20, color: '#580000' }} />
-          Authorize Manual SLA Override
+          Authorize Manual Time-In Override
         </DialogTitle>
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" sx={{ fontSize: '11.5px', color: 'text.secondary', lineHeight: 1.4 }}>
-            Manually override this transaction's SLA calculation. This action requires a strict justification reason and a supporting document upload.
+            Manually override this transaction's Time In. This action requires a corrected Time-In timestamp, a strict justification reason, and an optional supporting document upload (which can also be supplied later upon completion).
           </Typography>
         </Box>
 
         <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <InputLabel sx={{ fontSize: '12px', fontWeight: 700, color: 'text.primary' }}>Corrected Time In *</InputLabel>
+            <TextField
+              fullWidth
+              type="datetime-local"
+              value={overrideTimeIn}
+              onChange={(e) => setOverrideTimeIn(e.target.value)}
+            />
+          </Box>
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <InputLabel sx={{ fontSize: '12px', fontWeight: 700, color: 'text.primary' }}>Justification Reason *</InputLabel>
             <TextField
               fullWidth
               multiline
               rows={4}
-              placeholder="Explain why this transaction should be excluded/overridden from automated SLA target metrics..."
+              placeholder="Explain why this transaction's Time In should be manually overridden (e.g. system lag, forgotten log, printing delays)..."
               value={overrideReason}
               onChange={(e) => setOverrideReason(e.target.value)}
             />
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <InputLabel sx={{ fontSize: '12px', fontWeight: 700, color: 'text.primary' }}>Supporting Document (Mandatory) *</InputLabel>
+            <InputLabel sx={{ fontSize: '12px', fontWeight: 700, color: 'text.primary' }}>Supporting Document (Optional)</InputLabel>
             <Box 
               sx={{
                 border: '2px dashed #D1D5DB',
@@ -844,7 +1010,7 @@ export function TransactionDetailPage() {
           </Button>
           <Button
             onClick={handleOverrideSubmit}
-            disabled={submittingOverride || !overrideReason.trim() || !overrideFile}
+            disabled={submittingOverride || !overrideTimeIn || !overrideReason.trim()}
             variant="contained"
             sx={{
               bgcolor: '#580000',
@@ -855,7 +1021,7 @@ export function TransactionDetailPage() {
               '&:hover': { bgcolor: '#7a0c0c' }
             }}
           >
-            {submittingOverride ? 'Saving Override...' : 'Confirm SLA Override'}
+            {submittingOverride ? 'Saving Override...' : 'Confirm Time-In Override'}
           </Button>
         </DialogActions>
       </Dialog>

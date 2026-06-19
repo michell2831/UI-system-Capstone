@@ -115,6 +115,7 @@ export interface Transaction {
   is_overridden?: boolean
   override_reason?: string
   override_document_name?: string
+  original_time_in?: string
   client_name: string
   client_type?: string | null
   student_number?: string | null
@@ -182,6 +183,7 @@ export interface CreateTransactionDto {
 export interface UpdateTransactionStatusDto {
   status: TransactionStatus
   remarks?: string
+  override_document_name?: string
 }
 
 export interface UpdateDocumentaryStatusDto {
