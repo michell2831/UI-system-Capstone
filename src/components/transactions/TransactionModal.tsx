@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Controller } from 'react-hook-form'
@@ -40,6 +41,43 @@ function TransactionModalInner({ open, onOpenChange, services, currentUser, onCr
 
   const selectedServiceName = selectedService?.name || ''
   const selectedServiceCategory = selectedService?.category || 'Service'
+
+  const [currentStep, setCurrentStep] = useState(1)
+
+  useEffect(() => {
+    if (open) {
+      setCurrentStep(1)
+    }
+  }, [open])
+
+  const handleNextClick = async () => {
+    if (currentStep === 1) {
+      const isValid = await methods.trigger(['service_id', 'assigned_to', 'client_type', 'remarks'])
+      if (isValid) {
+        setCurrentStep(2)
+      }
+    } else if (currentStep === 2) {
+      const isValid = await methods.trigger([
+        'client_first_name',
+        'client_middle_name',
+        'client_surname',
+        'student_number',
+        'course',
+        'year_level',
+        'contact_number',
+        'organization',
+        'org_level'
+      ])
+      if (isValid) {
+        setCurrentStep(3)
+      }
+    } else if (currentStep === 3) {
+      const isValid = await methods.trigger('service_specific_data')
+      if (isValid) {
+        setCurrentStep(4)
+      }
+    }
+  }
 
   const mutation = useMutation<Transaction, Error, CreateTransactionDto>({
     mutationFn: async (payload) => {
@@ -119,7 +157,6 @@ function TransactionModalInner({ open, onOpenChange, services, currentUser, onCr
   }
 
   const handleClose = (_event: {}, reason: 'backdropClick' | 'escapeKeyDown') => {
-    // Prevent closing via clicking backdrop
     if (reason === 'backdropClick') return
     
     confirm({
@@ -133,392 +170,770 @@ function TransactionModalInner({ open, onOpenChange, services, currentUser, onCr
   }
 
   const remarksText = methods.watch('remarks') || ''
+  const steps = [
+    { number: 1, label: 'Service Information' },
+    { number: 2, label: 'Client Information' },
+    { number: 3, label: 'Service-Specific Fields' },
+    { number: 4, label: 'Review & Submit' }
+  ]
 
   return (
     <Dialog 
       open={open} 
       onClose={handleClose} 
-      maxWidth="lg" 
-      fullWidth
-      slotProps={{
-        paper: {
-          sx: {
-            borderRadius: '16px',
-            maxHeight: 'calc(100vh - 4rem)',
+      sx={{
+        zIndex: 1300,
+        '& .MuiDialog-container': {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        '& .MuiBackdrop-root': {
+          bgcolor: 'rgba(0,0,0,0.4)',
+        },
+        '& .MuiDialog-paper': {
+          width: '90vw',
+          maxWidth: '760px',
+          maxHeight: '90vh',
+          borderRadius: '12px',
+          bgcolor: '#FFFFFF',
+          p: '24px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          margin: 0,
+        },
+        '& .MuiDialogContent-root': {
+          p: 0,
+          overflowY: 'hidden',
+        },
+        '& .MuiOutlinedInput-root': {
+          borderRadius: '6px',
+          fontSize: '13px',
+          backgroundColor: '#FFFFFF',
+          '&:not(.MuiInputBase-multiline)': {
+            height: '36px',
+          },
+          '&.MuiInputBase-multiline': {
+            minHeight: '80px',
+            '& textarea': {
+              resize: 'none',
+            }
+          },
+          '& fieldset': {
+            borderColor: '#D1D5DB !important',
+            borderWidth: '1px !important',
+          },
+          '&:hover fieldset': {
+            borderColor: '#D1D5DB !important',
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: '#580000 !important',
+            borderWidth: '1px !important',
+          },
+        },
+        '& .MuiFormControl-root': {
+          display: 'flex',
+          flexDirection: 'column',
+          '& .MuiInputLabel-root': {
+            position: 'relative',
+            transform: 'none',
+            mb: '6px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#374151',
+            '& .MuiFormLabel-asterisk': {
+              color: '#E24B4A',
+            }
           }
+        },
+        '& .MuiTextField-root': {
+          display: 'flex',
+          flexDirection: 'column',
+          '& .MuiInputLabel-root': {
+            position: 'relative',
+            transform: 'none',
+            mb: '6px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#374151',
+            '& .MuiFormLabel-asterisk': {
+              color: '#E24B4A',
+            }
+          }
+        },
+        '& .MuiOutlinedInput-notchedOutline legend': {
+          display: 'none',
+        },
+        '& .MuiInputBase-input::placeholder': {
+          fontSize: '13px',
+          color: '#9CA3AF',
+          opacity: 1,
+        },
+        '& .MuiFormHelperText-root': {
+          fontSize: '11px',
+          mt: '4px',
         }
       }}
     >
-      <DialogTitle sx={{ px: { xs: 2.5, sm: 4 }, pt: 3, pb: 1 }}>
-        <Box sx={{ mb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, tracking: 'tight', color: 'text.primary' }}>
+      <DialogTitle sx={{ p: 0, mb: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Typography sx={{ fontSize: '18px', fontWeight: 600, fontFamily: '"DM Sans", sans-serif', color: '#111827', lineHeight: 1.2 }}>
             New Service Transaction
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '13px' }}>
+          <Typography sx={{ color: '#6B7280', fontSize: '13px', fontFamily: '"DM Sans", sans-serif' }}>
             Record a new transaction and auto-generate time-in, SLA, and audit timeline.
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-            <Chip label={selectedServiceCategory} size="small" variant="outlined" />
+            <Chip 
+              label={selectedServiceCategory} 
+              size="small" 
+              variant="outlined" 
+              sx={{ borderRadius: '9999px', fontSize: '11px', color: '#6B7280', borderColor: '#D1D5DB' }} 
+            />
             {selectedServiceName && (
-              <Chip label={selectedServiceName} size="small" sx={{ bgcolor: '#580000', color: 'white', fontWeight: 600 }} />
+              <Chip 
+                label={selectedServiceName} 
+                size="small" 
+                sx={{ bgcolor: '#580000', color: 'white', fontWeight: 600, borderRadius: '9999px', fontSize: '11px' }} 
+              />
             )}
           </Box>
         </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ px: { xs: 2.5, sm: 4 }, py: 1, overflowY: 'auto' }}>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1, pb: 2 }}>
-          {/* Service Information Card */}
-          <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '12px' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#580000' }}>
-                Service Information
+      {/* Step Indicator */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 3, borderBottom: '1px solid #F3F4F6', pb: 2 }}>
+        {steps.map((step, idx) => {
+          const isCompleted = currentStep > step.number
+          const isActive = currentStep === step.number
+          const color = isCompleted ? '#1D9E75' : (isActive ? '#580000' : '#D1D5DB')
+          
+          return (
+            <Box key={step.number} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box 
+                sx={{ 
+                  width: 20, 
+                  height: 20, 
+                  borderRadius: '50%', 
+                  bgcolor: color, 
+                  color: '#FFFFFF', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  fontFamily: '"DM Sans", sans-serif'
+                }}
+              >
+                {isCompleted ? '✓' : step.number}
+              </Box>
+              <Typography 
+                sx={{ 
+                  fontSize: '12px', 
+                  fontWeight: isActive ? 600 : 500, 
+                  color: color,
+                  fontFamily: '"DM Sans", sans-serif'
+                }}
+              >
+                {step.label}
               </Typography>
-              <Chip label="Time-In auto-recorded" size="small" variant="outlined" sx={{ color: '#C8960C', borderColor: '#C8960C', fontWeight: 600 }} />
-            </Box>
-
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField 
-                  fullWidth 
-                  label="Office / Service Office" 
-                  value={currentUser?.office_name ?? ''} 
-                  disabled 
-                  variant="outlined" 
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name="service_id"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <FormControl fullWidth error={Boolean(errors.service_id?.message)}>
-                      <InputLabel>Service Type *</InputLabel>
-                      <Select 
-                        value={field.value} 
-                        onChange={field.onChange} 
-                        label="Service Type *"
-                        MenuProps={{ slotProps: { paper: { sx: { maxHeight: '240px' } } } }}
-                      >
-                        {services.map((service) => (
-                          <MenuItem key={service.id} value={service.id}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                              <Typography variant="body2" sx={{ fontWeight: 500 }}>{service.name}</Typography>
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>{service.category}</Typography>
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {errors.service_id?.message && (
-                        <FormHelperText>{errors.service_id.message}</FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name="assigned_to"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <FormControl fullWidth>
-                      <InputLabel>Assign To</InputLabel>
-                      <Select value={field.value} onChange={field.onChange} label="Assign To">
-                        <MenuItem value="UNASSIGNED">Unassigned</MenuItem>
-                        {ASSIGNED_TO_OPTIONS.map((person) => (
-                          <MenuItem key={person.id} value={person.id}>
-                            {person.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      <FormHelperText>Only office staff can be assigned.</FormHelperText>
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name="client_type"
-                  control={control}
-                  defaultValue="Student"
-                  render={({ field }) => (
-                    <FormControl fullWidth>
-                      <InputLabel>Client Type *</InputLabel>
-                      <Select value={field.value} onChange={field.onChange} label="Client Type *">
-                        <MenuItem value="Student">Student</MenuItem>
-                        <MenuItem value="Organization Inside the PUP QC Campus">Organization Inside the PUP QC Campus</MenuItem>
-                        <MenuItem value="Visitor">Visitor</MenuItem>
-                        <MenuItem value="Alumni">Alumni</MenuItem>
-                        <MenuItem value="Faculty">Faculty</MenuItem>
-                      </Select>
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <Controller
-                  name="remarks"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label="Remarks (Optional)"
-                      placeholder="Optional remarks…"
-                      value={field.value}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 255) {
-                          field.onChange(e.target.value)
-                        }
-                      }}
-                      error={Boolean(errors.remarks?.message)}
-                      helperText={errors.remarks?.message || `${remarksText.length} / 255`}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Client Information Card */}
-          <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '12px' }}>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#580000' }}>
-                Client Information
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                {clientType === 'Organization Inside the PUP QC Campus' 
-                  ? 'Represents the organization as the president/authorized head, not an individual request.' 
-                  : 'Additional client details for the transaction.'}
-              </Typography>
-            </Box>
-
-            <Grid container spacing={3}>
-              {/* Org Name for Organization client type */}
-              {clientType === 'Organization Inside the PUP QC Campus' && (
-                <>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Controller
-                      name="organization"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <TextField
-                          fullWidth
-                          label="Org Name *"
-                          placeholder="e.g., CommiT Society"
-                          value={field.value}
-                          onChange={field.onChange}
-                          error={Boolean(errors.organization?.message)}
-                          helperText={errors.organization?.message}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Controller
-                      name="org_level"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <TextField
-                          fullWidth
-                          label="Org Level (Optional)"
-                          placeholder="e.g., University-wide / College-based"
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </Grid>
-                </>
+              {idx < steps.length - 1 && (
+                <Typography sx={{ color: '#D1D5DB', mx: 0.5 }}>→</Typography>
               )}
+            </Box>
+          )
+        })}
+      </Box>
 
-              {/* Standardized Client Name Split */}
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Controller
-                  name="client_first_name"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      label={clientType === 'Organization Inside the PUP QC Campus' ? 'Representative First Name *' : 'First Name *'}
-                      placeholder="First Name"
-                      value={field.value}
-                      onChange={field.onChange}
-                      error={Boolean(errors.client_first_name?.message)}
-                      helperText={errors.client_first_name?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Controller
-                  name="client_middle_name"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      label="Middle Name (Optional)"
-                      placeholder="Middle Name (Optional)"
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Controller
-                  name="client_surname"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      label={clientType === 'Organization Inside the PUP QC Campus' ? 'Representative Surname *' : 'Surname *'}
-                      placeholder="Surname"
-                      value={field.value}
-                      onChange={field.onChange}
-                      error={Boolean(errors.client_surname?.message)}
-                      helperText={errors.client_surname?.message}
-                    />
-                  )}
-                />
-              </Grid>
+      <DialogContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          
+          {/* STEP 1: Service Information */}
+          {currentStep === 1 && (
+            <Box sx={{ border: '1px solid #E5E7EB', borderRadius: '8px', p: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <Box>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#580000', fontFamily: '"DM Sans", sans-serif' }}>
+                  Service Information
+                </Typography>
+                <Typography sx={{ fontSize: '12px', color: '#6B7280', fontFamily: '"DM Sans", sans-serif', mt: '2px' }}>
+                  Specify the service and assignment details for this transaction.
+                </Typography>
+              </Box>
 
-              {/* Student Number & Course Program Fields for Student, Alumni, and Faculty */}
-              {clientType !== 'Visitor' && clientType !== 'Organization Inside the PUP QC Campus' && (
-                <>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Controller
-                      name="student_number"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <TextField
-                          fullWidth
-                          label={clientType === 'Student' ? 'Student Number *' : clientType === 'Faculty' ? 'Faculty Number (Optional)' : 'Student Number (Optional)'}
-                          placeholder={clientType === 'Student' ? '2026-01234-CM-0' : 'Optional Number'}
-                          value={field.value}
-                          onChange={field.onChange}
-                          error={Boolean(errors.student_number?.message)}
-                          helperText={errors.student_number?.message}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Controller
-                      name="course"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <TextField
-                          fullWidth
-                          label={clientType === 'Faculty' ? 'Department / Program (Optional)' : 'Course / Program' + (clientType === 'Student' ? ' *' : ' (Optional)')}
-                          placeholder="e.g., BSIT"
-                          value={field.value}
-                          onChange={field.onChange}
-                          error={Boolean(errors.course?.message)}
-                          helperText={errors.course?.message}
-                        />
-                      )}
-                    />
-                  </Grid>
-                </>
-              )}
-
-              {/* Spacing for contact number and year level */}
-              {clientType === 'Student' && (
+              <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Controller
-                    name="year_level"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <FormControl fullWidth error={Boolean(errors.year_level?.message)}>
-                        <InputLabel>Year Level *</InputLabel>
-                        <Select value={field.value} onChange={field.onChange} label="Year Level *">
-                          <MenuItem value="1st Year">1st Year</MenuItem>
-                          <MenuItem value="2nd Year">2nd Year</MenuItem>
-                          <MenuItem value="3rd Year">3rd Year</MenuItem>
-                          <MenuItem value="4th Year">4th Year</MenuItem>
-                          <MenuItem value="Others">Others</MenuItem>
-                        </Select>
-                        {errors.year_level?.message && (
-                          <FormHelperText>{errors.year_level.message}</FormHelperText>
-                        )}
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-              )}
-              <Grid size={{ xs: 12, sm: clientType === 'Student' ? 6 : 12 }}>
-                <Controller
-                  name="contact_number"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      label={`Contact Number${clientType === 'Visitor' ? ' (Optional)' : ' *'}`}
-                      placeholder="09XXXXXXXXX"
-                      value={field.value}
-                      onChange={field.onChange}
-                      error={Boolean(errors.contact_number?.message)}
-                      helperText={errors.contact_number?.message}
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Office / Service Office</Typography>
+                    <TextField 
+                      fullWidth 
+                      value={currentUser?.office_name ?? ''} 
+                      disabled 
+                      variant="outlined"
+                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#F3F4F6' } }}
                     />
-                  )}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
+                  </Box>
+                </Grid>
+                
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Service Type <span style={{ color: '#E24B4A' }}>*</span></Typography>
+                    <Controller
+                      name="service_id"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <FormControl fullWidth error={Boolean(errors.service_id?.message)}>
+                          <Select 
+                            value={field.value} 
+                            onChange={field.onChange} 
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return <span style={{ color: '#9CA3AF' }}>Select a service…</span>
+                              }
+                              const svc = services.find(s => s.id === selected)
+                              return svc ? svc.name : ''
+                            }}
+                            MenuProps={{ slotProps: { paper: { sx: { maxHeight: '200px' } } } }}
+                          >
+                            {services.map((service) => (
+                              <MenuItem key={service.id} value={service.id}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{service.name}</Typography>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>{service.category}</Typography>
+                                </Box>
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {errors.service_id?.message && (
+                            <FormHelperText>{errors.service_id.message}</FormHelperText>
+                          )}
+                        </FormControl>
+                      )}
+                    />
+                  </Box>
+                </Grid>
 
-          {/* Service-Specific Fields */}
-          <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '12px' }}>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#580000' }}>
-                Service-Specific Fields (Optional)
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                Fields change depending on the selected service.
-              </Typography>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Assign To</Typography>
+                    <Controller
+                      name="assigned_to"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <FormControl fullWidth>
+                          <Select value={field.value} onChange={field.onChange}>
+                            <MenuItem value="UNASSIGNED">Unassigned</MenuItem>
+                            {ASSIGNED_TO_OPTIONS.map((person) => (
+                              <MenuItem key={person.id} value={person.id}>
+                                {person.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
+                    />
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Client Type <span style={{ color: '#E24B4A' }}>*</span></Typography>
+                    <Controller
+                      name="client_type"
+                      control={control}
+                      defaultValue="Student"
+                      render={({ field }) => (
+                        <FormControl fullWidth>
+                          <Select value={field.value} onChange={field.onChange}>
+                            <MenuItem value="Student">Student</MenuItem>
+                            <MenuItem value="Organization Inside the PUP QC Campus">Organization Inside the PUP QC Campus</MenuItem>
+                            <MenuItem value="Visitor">Visitor</MenuItem>
+                            <MenuItem value="Alumni">Alumni</MenuItem>
+                            <MenuItem value="Faculty">Faculty</MenuItem>
+                          </Select>
+                        </FormControl>
+                      )}
+                    />
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Remarks (Optional)</Typography>
+                    <Controller
+                      name="remarks"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          placeholder="Optional remarks…"
+                          value={field.value}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 255) {
+                              field.onChange(e.target.value)
+                            }
+                          }}
+                          error={Boolean(errors.remarks?.message)}
+                          helperText={errors.remarks?.message || `${remarksText.length} / 255`}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
             </Box>
-            <ServiceDynamicFields />
-          </Paper>
+          )}
+
+          {/* STEP 2: Client Information */}
+          {currentStep === 2 && (
+            <Box sx={{ border: '1px solid #E5E7EB', borderRadius: '8px', p: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '55vh', overflowY: 'auto' }}>
+              <Box>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#580000', fontFamily: '"DM Sans", sans-serif' }}>
+                  Client Information
+                </Typography>
+                <Typography sx={{ fontSize: '12px', color: '#6B7280', fontFamily: '"DM Sans", sans-serif', mt: '2px' }}>
+                  {clientType === 'Organization Inside the PUP QC Campus' 
+                    ? 'Represents the organization as the president/authorized head.' 
+                    : 'Personal details for the transaction.'}
+                </Typography>
+              </Box>
+
+              <Grid container spacing={2}>
+                {clientType === 'Organization Inside the PUP QC Campus' && (
+                  <>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Org Name <span style={{ color: '#E24B4A' }}>*</span></Typography>
+                        <Controller
+                          name="organization"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <TextField
+                              fullWidth
+                              placeholder="e.g., Jose Reyes"
+                              value={field.value}
+                              onChange={field.onChange}
+                              error={Boolean(errors.organization?.message)}
+                              helperText={errors.organization?.message}
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Org Level (Optional)</Typography>
+                        <Controller
+                          name="org_level"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <TextField
+                              fullWidth
+                              placeholder="e.g., College-based"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                  </>
+                )}
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>
+                      {clientType === 'Organization Inside the PUP QC Campus' ? 'Rep. First Name' : 'First Name'} <span style={{ color: '#E24B4A' }}>*</span>
+                    </Typography>
+                    <Controller
+                      name="client_first_name"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          fullWidth
+                          placeholder="First Name"
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={Boolean(errors.client_first_name?.message)}
+                          helperText={errors.client_first_name?.message}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Middle Name (Optional)</Typography>
+                    <Controller
+                      name="client_middle_name"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          fullWidth
+                          placeholder="Middle Name (Optional)"
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>
+                      {clientType === 'Organization Inside the PUP QC Campus' ? 'Rep. Surname' : 'Surname'} <span style={{ color: '#E24B4A' }}>*</span>
+                    </Typography>
+                    <Controller
+                      name="client_surname"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          fullWidth
+                          placeholder="Surname"
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={Boolean(errors.client_surname?.message)}
+                          helperText={errors.client_surname?.message}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Grid>
+
+                {clientType !== 'Visitor' && clientType !== 'Organization Inside the PUP QC Campus' && (
+                  <>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>
+                          {clientType === 'Faculty' ? 'Faculty Number (Optional)' : 'Student Number' + (clientType === 'Student' ? ' *' : ' (Optional)')}
+                        </Typography>
+                        <Controller
+                          name="student_number"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <TextField
+                              fullWidth
+                              placeholder={clientType === 'Student' ? '2026-01234-CM-0' : 'Optional Number'}
+                              value={field.value}
+                              onChange={field.onChange}
+                              error={Boolean(errors.student_number?.message)}
+                              helperText={errors.student_number?.message}
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>
+                          {clientType === 'Faculty' ? 'Department (Optional)' : 'Course / Program' + (clientType === 'Student' ? ' *' : ' (Optional)')}
+                        </Typography>
+                        <Controller
+                          name="course"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <TextField
+                              fullWidth
+                              placeholder="e.g., BSIT"
+                              value={field.value}
+                              onChange={field.onChange}
+                              error={Boolean(errors.course?.message)}
+                              helperText={errors.course?.message}
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                  </>
+                )}
+
+                {clientType === 'Student' && (
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>Year Level <span style={{ color: '#E24B4A' }}>*</span></Typography>
+                      <Controller
+                        name="year_level"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <FormControl fullWidth error={Boolean(errors.year_level?.message)}>
+                            <Select value={field.value} onChange={field.onChange}>
+                              <MenuItem value="1st Year">1st Year</MenuItem>
+                              <MenuItem value="2nd Year">2nd Year</MenuItem>
+                              <MenuItem value="3rd Year">3rd Year</MenuItem>
+                              <MenuItem value="4th Year">4th Year</MenuItem>
+                              <MenuItem value="Others">Others</MenuItem>
+                            </Select>
+                            {errors.year_level?.message && (
+                              <FormHelperText>{errors.year_level.message}</FormHelperText>
+                            )}
+                          </FormControl>
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                )}
+
+                <Grid size={{ xs: 12, sm: clientType === 'Student' ? 6 : 12 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#374151', mb: '6px' }}>
+                      Contact Number {clientType !== 'Visitor' && <span style={{ color: '#E24B4A' }}>*</span>}
+                    </Typography>
+                    <Controller
+                      name="contact_number"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          fullWidth
+                          placeholder="09XXXXXXXXX"
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={Boolean(errors.contact_number?.message)}
+                          helperText={errors.contact_number?.message}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+
+          {/* STEP 3: Service-Specific Fields */}
+          {currentStep === 3 && (
+            <Box sx={{ border: '1px solid #E5E7EB', borderRadius: '8px', p: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '55vh', overflowY: 'auto' }}>
+              <Box>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#580000', fontFamily: '"DM Sans", sans-serif' }}>
+                  Service-Specific Fields
+                </Typography>
+                <Typography sx={{ fontSize: '12px', color: '#6B7280', fontFamily: '"DM Sans", sans-serif', mt: '2px' }}>
+                  Required documents and custom fields based on Citizen's Charter.
+                </Typography>
+              </Box>
+
+              <ServiceDynamicFields />
+            </Box>
+          )}
+
+          {/* STEP 4: Review & Submit */}
+          {currentStep === 4 && (
+            <Box sx={{ border: '1px solid #E5E7EB', borderRadius: '8px', p: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '55vh', overflowY: 'auto' }}>
+              <Box>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#580000', fontFamily: '"DM Sans", sans-serif' }}>
+                  Review &amp; Submit
+                </Typography>
+                <Typography sx={{ fontSize: '12px', color: '#6B7280', fontFamily: '"DM Sans", sans-serif', mt: '2px' }}>
+                  Review the entered transaction details before submitting.
+                </Typography>
+              </Box>
+
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#580000', textTransform: 'uppercase', fontSize: '10px' }}>Service Information</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Office</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{currentUser?.office_name || 'N/A'}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Service Name</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{selectedServiceName || 'N/A'}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Assigned To</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>
+                    {ASSIGNED_TO_OPTIONS.find(o => o.id === methods.getValues('assigned_to'))?.name || 'Unassigned'}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Client Type</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('client_type')}</Typography>
+                </Grid>
+                {methods.getValues('remarks') && (
+                  <Grid size={{ xs: 12 }}>
+                    <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Remarks</Typography>
+                    <Typography sx={{ fontSize: '13px', color: '#111827', whiteSpace: 'pre-wrap' }}>{methods.getValues('remarks')}</Typography>
+                  </Grid>
+                )}
+
+                <Grid size={{ xs: 12 }} sx={{ mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#580000', textTransform: 'uppercase', fontSize: '10px' }}>Client Details</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>First Name</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('client_first_name')}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Middle Name</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('client_middle_name') || '—'}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Surname</Typography>
+                  <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('client_surname')}</Typography>
+                </Grid>
+
+                {clientType === 'Organization Inside the PUP QC Campus' && (
+                  <>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Organization</Typography>
+                      <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('organization')}</Typography>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Org Level</Typography>
+                      <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('org_level') || '—'}</Typography>
+                    </Grid>
+                  </>
+                )}
+
+                {clientType !== 'Visitor' && clientType !== 'Organization Inside the PUP QC Campus' && (
+                  <>
+                    {methods.getValues('student_number') && (
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>
+                          {clientType === 'Faculty' ? 'Faculty Number' : 'Student Number'}
+                        </Typography>
+                        <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('student_number')}</Typography>
+                      </Grid>
+                    )}
+                    {methods.getValues('course') && (
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>
+                          {clientType === 'Faculty' ? 'Department' : 'Course / Program'}
+                        </Typography>
+                        <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('course')}</Typography>
+                      </Grid>
+                    )}
+                  </>
+                )}
+
+                {clientType === 'Student' && methods.getValues('year_level') && (
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Year Level</Typography>
+                    <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('year_level')}</Typography>
+                  </Grid>
+                )}
+                {methods.getValues('contact_number') && (
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>Contact Number</Typography>
+                    <Typography sx={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{methods.getValues('contact_number')}</Typography>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          )}
+
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: { xs: 2.5, sm: 4 }, py: 3, borderTop: '1px solid #E5E7EB', display: 'flex', flexDirection: { xs: 'column-reverse', sm: 'row' }, gap: '8px' }}>
-        <Button variant="outlined" onClick={handleCancelClick} sx={{ textTransform: 'none', px: 3, borderColor: 'divider', color: 'text.secondary', width: { xs: '100%', sm: 'auto' } }}>
-          Cancel
-        </Button>
+      <DialogActions sx={{ p: 0, mt: 3, borderTop: '1px solid #E5E7EB', pt: 2, display: 'flex', justifyContent: 'space-between' }}>
         <Button 
-          type="submit" 
-          onClick={handleSubmit(onSubmit)}
-          variant="contained" 
-          disabled={mutation.status === 'pending'}
+          variant="outlined" 
+          onClick={handleCancelClick} 
           sx={{ 
             textTransform: 'none', 
-            px: 3, 
-            bgcolor: '#580000', 
-            color: 'white',
-            width: { xs: '100%', sm: 'auto' },
-            '&:hover': { bgcolor: '#7a0c0c' } 
+            borderRadius: '6px', 
+            borderColor: '#D1D5DB', 
+            color: '#374151', 
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: '13px',
+            fontWeight: 600,
+            height: '36px',
+            '&:hover': {
+              borderColor: '#B0B0B0',
+              bgcolor: '#F9FAFB',
+            }
           }}
         >
-          {mutation.status === 'pending' ? 'Saving…' : 'Submit Transaction'}
+          Cancel
         </Button>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          {currentStep > 1 && (
+            <Button 
+              variant="outlined" 
+              onClick={() => setCurrentStep(prev => prev - 1)}
+              sx={{ 
+                textTransform: 'none', 
+                borderRadius: '6px', 
+                borderColor: '#D1D5DB', 
+                color: '#374151', 
+                fontFamily: '"DM Sans", sans-serif',
+                fontSize: '13px',
+                fontWeight: 600,
+                height: '36px',
+                '&:hover': {
+                  borderColor: '#B0B0B0',
+                  bgcolor: '#F9FAFB',
+                }
+              }}
+            >
+              Back
+            </Button>
+          )}
+          {currentStep < 4 ? (
+            <Button 
+              variant="contained" 
+              onClick={handleNextClick}
+              sx={{ 
+                textTransform: 'none', 
+                borderRadius: '6px', 
+                bgcolor: '#580000', 
+                color: '#FFFFFF', 
+                fontFamily: '"DM Sans", sans-serif',
+                fontSize: '13px',
+                fontWeight: 600,
+                height: '36px',
+                '&:hover': {
+                  bgcolor: '#400000',
+                }
+              }}
+            >
+              Next
+            </Button>
+          ) : (
+            <Button 
+              variant="contained" 
+              onClick={handleSubmit(onSubmit)}
+              disabled={mutation.status === 'pending'}
+              sx={{ 
+                textTransform: 'none', 
+                borderRadius: '6px', 
+                bgcolor: '#580000', 
+                color: '#FFFFFF', 
+                fontFamily: '"DM Sans", sans-serif',
+                fontSize: '13px',
+                fontWeight: 600,
+                height: '36px',
+                '&:hover': {
+                  bgcolor: '#400000',
+                }
+              }}
+            >
+              {mutation.status === 'pending' ? 'Saving…' : 'Submit Transaction'}
+            </Button>
+          )}
+        </Box>
       </DialogActions>
     </Dialog>
   )
 }
+
 
 export function TransactionModal(props: TransactionModalProps) {
   const defaultValues: TransactionFormValues = {

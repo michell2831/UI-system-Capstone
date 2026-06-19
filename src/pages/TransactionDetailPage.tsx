@@ -148,15 +148,31 @@ export function TransactionDetailPage() {
 
   useEffect(() => {
     if (!id) return
+    
+    setLoading(true)
+
     Promise.all([
       getTransactionApi(id),
       getTransactionHistoryApi(id),
-      getUsersApi(user?.office_id),
-    ]).then(([t, h, users]) => {
-      setTxn(t)
-      setHistory(h)
-      setOfficeUsers(users.filter((u) => u.role !== 'opcr_evaluator'))
-    }).finally(() => setLoading(false))
+    ])
+      .then(([t, h]) => {
+        setTxn(t)
+        setHistory(h)
+
+        // Fetch users separately so a backend failure doesn't break the whole page
+        getUsersApi(user?.office_id)
+          .then((users) => {
+            setOfficeUsers(users.filter((u) => u.role !== 'opcr_evaluator'))
+          })
+          .catch((err) => {
+            console.warn('Failed to load office users. Real backend might be down.', err)
+            setOfficeUsers([])
+          })
+      })
+      .catch((err) => {
+        console.error('Failed to load transaction:', err)
+      })
+      .finally(() => setLoading(false))
   }, [id, user])
 
   // Trigger Status Update Confirm
@@ -401,9 +417,53 @@ export function TransactionDetailPage() {
                     <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.client_name}</Typography>
                   </Grid>
                   <Grid size={{ xs: 6 }}>
+                    <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Client Type</Typography>
+                    <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.client_type || '—'}</Typography>
+                  </Grid>
+                  
+                  {txn.student_number && (
+                    <Grid size={{ xs: 6 }}>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Student Number</Typography>
+                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.student_number}</Typography>
+                    </Grid>
+                  )}
+                  {txn.course && (
+                    <Grid size={{ xs: 6 }}>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Course</Typography>
+                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.course}</Typography>
+                    </Grid>
+                  )}
+                  {txn.year_level && (
+                    <Grid size={{ xs: 6 }}>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Year Level</Typography>
+                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.year_level}</Typography>
+                    </Grid>
+                  )}
+                  {txn.contact_number && (
+                    <Grid size={{ xs: 6 }}>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Contact Number</Typography>
+                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.contact_number}</Typography>
+                    </Grid>
+                  )}
+                  {txn.organization && (
+                    <Grid size={{ xs: 12 }}>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Organization / Institution</Typography>
+                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.organization}</Typography>
+                    </Grid>
+                  )}
+
+
+
+                  <Grid size={{ xs: 12 }}>
+                    <Divider />
+                  </Grid>
+
+                  <Grid size={{ xs: 6 }}>
                     <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Created By</Typography>
                     <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', mt: 0.5 }}>{txn.created_by_name}</Typography>
                   </Grid>
+                  <Grid size={{ xs: 6 }}></Grid>
+
                   <Grid size={{ xs: 6 }}>
                     <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>Time In</Typography>
                     <Typography sx={{ fontSize: '14px', fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
