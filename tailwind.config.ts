@@ -10,6 +10,16 @@ const config: Config = {
         sans: ['"DM Sans"', 'sans-serif'],
         serif: ['"DM Serif Display"', 'serif'],
       },
+      fontSize: {
+        '2xs': 'var(--text-2xs)',
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        base: 'var(--text-base)',
+        md: 'var(--text-md)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
+        '2xl': 'var(--text-2xl)',
+      },
       colors: {
         border: 'var(--border)',
         input: 'var(--input)',

@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
-import { Bell, Menu, ChevronDown, LogOut, Settings } from 'lucide-react'
+import { Bell, Menu as MenuIcon, ChevronDown, LogOut, Settings } from 'lucide-react'
 import { useAuth } from '@/auth/AuthContext'
 import { useSidebar } from './AppLayout'
-import { cn } from '@/utils/cn'
 import { toast } from '@/hooks/useToast'
 import { useModals } from '@/components/shared/ModalContext'
+import { Box, Typography, IconButton, Menu, MenuItem, Avatar, Badge, useMediaQuery } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 interface BreadcrumbItem {
   label: string
@@ -19,13 +20,16 @@ export function TopBar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { confirm } = useModals()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
-  // Dropdown visibility states
-  const [profileOpen, setProfileOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
+  // Profile menu anchor
+  const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null)
+  // Notification menu anchor
+  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null)
 
-  const profileRef = useRef<HTMLDivElement>(null)
-  const notifRef = useRef<HTMLDivElement>(null)
+  const isProfileOpen = Boolean(profileAnchorEl)
+  const isNotifOpen = Boolean(notifAnchorEl)
 
   // Mock Notifications
   const notifications = [
@@ -34,27 +38,13 @@ export function TopBar() {
     { id: 3, text: 'Documentary status updated for txn-99', time: '3 hours ago' },
   ]
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false)
-      }
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setNotifOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   // Dynamic breadcrumb labels based on current path
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     const path = location.pathname
-    const items: BreadcrumbItem[] = [{ label: 'Home', to: '/dashboard' }]
+    const items: BreadcrumbItem[] = [{ label: 'Dashboard', to: '/dashboard' }]
 
     if (path === '/dashboard') {
-      return [{ label: 'Home', to: '/dashboard', active: true }]
+      return [{ label: 'Dashboard', to: '/dashboard', active: true }]
     }
 
     if (path === '/users') {
@@ -88,7 +78,7 @@ export function TopBar() {
   }
 
   const handleSettingsClick = () => {
-    setProfileOpen(false)
+    setProfileAnchorEl(null)
     toast({
       title: 'ARMS Settings Module',
       description: 'Account settings are managed via the central Administrative & Records Management System (ARMS).',
@@ -97,135 +87,240 @@ export function TopBar() {
   }
 
   const handleLogout = () => {
-    setProfileOpen(false)
+    setProfileAnchorEl(null)
     logout()
     navigate('/login')
   }
 
   const breadcrumbs = getBreadcrumbs()
 
+  const userInitials = user?.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() ?? 'US'
+
   return (
-    <header className="sticky top-0 z-20 h-16 border-b border-border bg-card flex items-center justify-between px-6 shrink-0 shadow-sm">
+    <Box
+      component="header"
+      sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 20,
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        px: '24px',
+        bgcolor: '#FFFFFF',
+        borderBottom: '1px solid #E5E7EB',
+      }}
+    >
       {/* Left side: Hamburger Toggle & Breadcrumbs */}
-      <div className="flex items-center gap-4">
-        <button
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <IconButton
           onClick={() => {
-            if (window.innerWidth < 768) {
+            if (isMobile) {
               setMobileOpen(!isMobileOpen)
             } else {
               setCollapsed(!isCollapsed)
             }
           }}
-          className="p-2 -ml-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+          sx={{
+            padding: '8px',
+            color: 'text.secondary',
+            '&:hover': { bgcolor: 'action.hover' },
+          }}
           title="Toggle Sidebar"
         >
-          <Menu className="h-5 w-5" />
-        </button>
+          <MenuIcon style={{ width: 20, height: 20 }} />
+        </IconButton>
 
-        <nav className="hidden sm:flex items-center gap-1.5 text-xs">
+        <Box component="nav" sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: '6px' }}>
           {breadcrumbs.map((crumb, idx) => (
-            <div key={idx} className="flex items-center gap-1.5">
-              {idx > 0 && <span className="text-muted-foreground/40 font-semibold">&gt;</span>}
+            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {idx > 0 && (
+                <Typography sx={{ color: 'text.secondary', opacity: 0.4, fontWeight: 700, fontSize: '10px' }}>
+                  &gt;
+                </Typography>
+              )}
               {crumb.active ? (
-                <span className="font-semibold text-[#580000]">{crumb.label}</span>
-              ) : (
-                <Link to={crumb.to} className="text-muted-foreground hover:text-foreground transition-colors">
+                <Typography sx={{ fontWeight: 600, fontSize: '12px', color: '#580000' }}>
                   {crumb.label}
+                </Typography>
+              ) : (
+                <Link to={crumb.to} style={{ textDecoration: 'none' }}>
+                  <Typography sx={{ color: 'text.secondary', fontSize: '12px', '&:hover': { color: 'text.primary' } }}>
+                    {crumb.label}
+                  </Typography>
                 </Link>
               )}
-            </div>
+            </Box>
           ))}
-        </nav>
-      </div>
+        </Box>
+      </Box>
 
-      {/* Right side: Date Badge, Notifications & User Profile */}
-      <div className="flex items-center gap-4">
+      {/* Right side: Notifications & User Profile */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {/* Notification Bell */}
-        <div className="relative" ref={notifRef}>
-          <button
-            onClick={() => setNotifOpen(!notifOpen)}
-            className={cn(
-              "p-2 rounded-lg hover:bg-muted text-muted-foreground transition-all relative",
-              notifOpen && "bg-muted text-[#580000]"
-            )}
+        <Box>
+          <IconButton
+            onClick={(e) => setNotifAnchorEl(e.currentTarget)}
+            sx={{
+              padding: '8px',
+              color: isNotifOpen ? '#580000' : 'text.secondary',
+              bgcolor: isNotifOpen ? 'rgba(0,0,0,0.04)' : 'transparent',
+              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
+            }}
             title="Notifications"
           >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-[#E24B4A] border-2 border-white animate-pulse" />
-          </button>
+            <Badge
+              variant="dot"
+              color="error"
+              sx={{
+                '& .MuiBadge-badge': {
+                  backgroundColor: '#E24B4A',
+                  border: '2px solid #FFF',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                }
+              }}
+            >
+              <Bell style={{ width: 20, height: 20 }} />
+            </Badge>
+          </IconButton>
 
           {/* Notifications Dropdown Panel */}
-          {notifOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-card rounded-xl border border-border shadow-xl py-2 z-50">
-              <div className="px-4 py-2 border-b border-border flex items-center justify-between">
-                <span className="font-semibold text-sm text-[#580000]">Notifications</span>
-                <span className="text-[10px] bg-[#EAF3DE] text-[#1D9E75] px-1.5 py-0.5 rounded-full font-bold">New</span>
-              </div>
-              <div className="max-h-60 overflow-y-auto scrollbar-thin">
-                {notifications.map((n) => (
-                  <div key={n.id} className="px-4 py-2.5 hover:bg-muted/40 transition-colors border-b border-border/50 last:border-0">
-                    <p className="text-xs text-foreground font-medium">{n.text}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{n.time}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          <Menu
+            anchorEl={notifAnchorEl}
+            open={isNotifOpen}
+            onClose={() => setNotifAnchorEl(null)}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            slotProps={{
+              paper: {
+                sx: {
+                  width: '320px',
+                  borderRadius: '12px',
+                  border: '1px solid #E5E7EB',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                  mt: 1.5,
+                  p: 0,
+                }
+              }
+            }}
+          >
+            <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontWeight: 600, fontSize: '14px', color: '#580000' }}>Notifications</Typography>
+              <Box sx={{ bgcolor: '#EAF3DE', color: '#1D9E75', px: '8px', py: '2px', borderRadius: '10px', fontSize: '10px', fontWeight: 700 }}>
+                New
+              </Box>
+            </Box>
+            <Box sx={{ maxHeight: '240px', overflowY: 'auto' }}>
+              {notifications.map((n) => (
+                <Box key={n.id} sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6', '&:last-child': { borderBottom: 0 }, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 500, color: 'text.primary', lineHeight: 1.4 }}>{n.text}</Typography>
+                  <Typography sx={{ fontSize: '10px', color: 'text.secondary', mt: '4px' }}>{n.time}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Menu>
+        </Box>
 
         {/* User Profile dropdown */}
-        <div className="relative" ref={profileRef}>
-          <button
-            onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-muted text-left transition-all"
+        <Box>
+          <Box
+            component="button"
+            onClick={(e) => setProfileAnchorEl(e.currentTarget)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: 0,
+              bgcolor: isProfileOpen ? 'rgba(0,0,0,0.04)' : 'transparent',
+              cursor: 'pointer',
+              outline: 'none',
+              textAlign: 'left',
+              transition: 'background-color 0.2s',
+              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
+            }}
           >
-            {/* User initials / Avatar */}
-            <div className="w-8 h-8 rounded-full bg-[#580000] text-white flex items-center justify-center text-xs font-bold shadow-sm">
-              {user?.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
-            </div>
-            <div className="hidden sm:block min-w-0 pr-1 select-none">
-              <p className="text-xs font-semibold text-foreground leading-none truncate max-w-[120px]">
+            <Avatar
+              sx={{
+                width: '32px',
+                height: '32px',
+                bgcolor: '#580000',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 700,
+                boxShadow: '0px 1px 3px rgba(0,0,0,0.1)',
+              }}
+            >
+              {userInitials}
+            </Avatar>
+            <Box sx={{ display: { xs: 'none', sm: 'block' }, pr: '4px' }}>
+              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: 'text.primary', lineHeight: 1 }}>
                 {user?.name}
-              </p>
-              <p className="text-[10px] text-muted-foreground leading-none mt-1 uppercase font-medium">
+              </Typography>
+              <Typography sx={{ fontSize: '10px', color: 'text.secondary', lineHeight: 1, mt: '4px', textTransform: 'uppercase', fontWeight: 500 }}>
                 {user?.role.replace('_', ' ')}
-              </p>
-            </div>
-            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", profileOpen && "rotate-180")} />
-          </button>
+              </Typography>
+            </Box>
+            <ChevronDown style={{ width: 16, height: 16, color: '#6b7280', transform: isProfileOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+          </Box>
 
-          {/* Profile Dropdown Menu */}
-          {profileOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl border border-border shadow-xl py-2 z-50 overflow-hidden">
-              {/* Menu items */}
-              <div className="py-1">
-                <button
-                  onClick={handleSettingsClick}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-xs text-foreground hover:bg-muted transition-colors font-medium"
-                >
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  Settings
-                </button>
-                <button
-                  onClick={() => {
-                    setProfileOpen(false)
-                    confirm({
-                      title: 'Confirm Logout',
-                      message: 'Are you sure you want to log out of the OPCR System?',
-                      confirmText: 'Confirm',
-                      onConfirm: handleLogout,
-                    })
-                  }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-xs text-[#E24B4A] hover:bg-[#FCEBEB] transition-colors font-medium border-t border-border/50"
-                >
-                  <LogOut className="h-4 w-4 text-[#E24B4A]" />
-                  Logout
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
+          <Menu
+            anchorEl={profileAnchorEl}
+            open={isProfileOpen}
+            onClose={() => setProfileAnchorEl(null)}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            slotProps={{
+              paper: {
+                sx: {
+                  width: '200px',
+                  borderRadius: '12px',
+                  border: '1px solid #E5E7EB',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                  mt: 1.5,
+                }
+              }
+            }}
+          >
+            <MenuItem onClick={handleSettingsClick} sx={{ py: 1.2, gap: 1.5, fontSize: '12px', fontWeight: 500 }}>
+              <Settings style={{ width: 16, height: 16, color: '#6b7280' }} />
+              Settings
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setProfileAnchorEl(null)
+                confirm({
+                  title: 'Confirm Logout',
+                  message: 'Are you sure you want to log out of the OPCR System?',
+                  confirmText: 'Confirm',
+                  onConfirm: handleLogout,
+                })
+              }}
+              sx={{
+                py: 1.2,
+                gap: 1.5,
+                fontSize: '12px',
+                fontWeight: 500,
+                color: '#E24B4A',
+                borderTop: '1px solid #F3F4F6',
+                '&:hover': { bgcolor: '#FCEBEB' }
+              }}
+            >
+              <LogOut style={{ width: 16, height: 16, color: '#E24B4A' }} />
+              Logout
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+    </Box>
   )
 }

@@ -1,4 +1,4 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { Dialog, Box, Typography, Button } from '@mui/material'
 
 interface ResultModalProps {
   open: boolean
@@ -28,135 +28,124 @@ export function ResultModal({
   }
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <DialogPrimitive.Portal>
-        {/* Overlay with custom background and blur */}
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[2000] bg-black/55 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        
-        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-[2001] w-[calc(100%-32px)] max-w-[400px] translate-x-[-50%] translate-y-[-50%] focus:outline-none">
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes resultModalPop {
-              0%   { transform: scale(0.85); opacity: 0; }
-              70%  { transform: scale(1.03); opacity: 1; }
-              100% { transform: scale(1); opacity: 1; }
-            }
-            .result-modal-card {
-              background: #ffffff;
-              border-radius: 16px;
-              width: 100%;
-              padding: 36px 32px 28px;
-              box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-              font-family: var(--font-ui), sans-serif;
-              box-sizing: border-box;
-              animation: resultModalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-              text-align: center;
-            }
-            .result-icon-circle {
-              width: 68px;
-              height: 68px;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto 20px;
-            }
-            .result-modal-title {
-              font-family: var(--font-display), 'DM Serif Display', Georgia, serif;
-              font-size: 22px;
-              font-weight: 500;
-              color: #0F172A;
-              margin: 0 0 10px;
-            }
-            .result-modal-message {
-              font-size: 13.5px;
-              color: #64748B;
-              line-height: 1.6;
-              margin: 0 0 28px;
-            }
-            .result-modal-btn {
-              padding: 11px 32px;
-              font-size: 13.5px;
-              font-weight: 600;
-              color: #ffffff;
-              border: none;
-              border-radius: 6px;
-              cursor: pointer;
-              transition: all 0.15s ease;
-              width: 100%;
-            }
-            .result-modal-btn:hover {
-              filter: brightness(1.1);
-              transform: translateY(-1px);
-            }
-          `}} />
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: '16px',
+            padding: '36px 32px 28px',
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
+            boxSizing: 'border-box',
+          }
+        }
+      }}
+    >
+      {/* Icon Circle */}
+      <Box
+        sx={{
+          width: '68px',
+          height: '68px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px',
+          background: isNext ? "#FAEEDA" : (isSuccess ? "#E8F5E9" : "#FEF2F2"),
+          border: isNext ? "1.5px solid rgba(200,150,12,0.25)" : (isSuccess ? "1.5px solid rgba(76,175,80,0.2)" : "1.5px solid rgba(239,68,68,0.15)"),
+        }}
+      >
+        {isNext ? (
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+            stroke="#C8960C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <polyline points="12 16 14 18 18 14" />
+          </svg>
+        ) : isSuccess ? (
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+            stroke="#15803D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        ) : (
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+            stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        )}
+      </Box>
 
-          <div className="result-modal-card">
-            {/* Icon */}
-            <div
-              className="result-icon-circle"
-              style={{
-                background: isNext ? "#FAEEDA" : (isSuccess ? "#E8F5E9" : "#FEF2F2"),
-                border: isNext ? "1.5px solid rgba(200,150,12,0.25)" : (isSuccess ? "1.5px solid rgba(76,175,80,0.2)" : "1.5px solid rgba(239,68,68,0.15)"),
-              }}
-            >
-              {isNext ? (
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
-                  stroke="#C8960C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                  <polyline points="12 16 14 18 18 14" />
-                </svg>
-              ) : isSuccess ? (
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
-                  stroke="#15803D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              ) : (
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
-                  stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              )}
-            </div>
+      {/* Title */}
+      <Typography
+        variant="h6"
+        sx={{
+          fontFamily: "'DM Serif Display', Georgia, serif",
+          fontSize: '22px',
+          fontWeight: 500,
+          color: '#0F172A',
+          margin: '0 0 10px',
+        }}
+      >
+        {title || (isNext ? "Period Transition" : isSuccess ? "Success!" : "Something went wrong")}
+      </Typography>
 
-            {/* Title */}
-            <DialogPrimitive.Title className="result-modal-title">
-              {title || (isNext ? "Period Transition" : isSuccess ? "Success!" : "Something went wrong")}
-            </DialogPrimitive.Title>
+      {/* Message */}
+      <Typography
+        sx={{
+          fontSize: '13.5px',
+          color: '#64748B',
+          lineHeight: 1.6,
+          margin: '0 0 28px',
+        }}
+      >
+        {message || (isNext
+          ? "The system has automatically moved to the next evaluation period."
+          : isSuccess
+          ? "The action was completed successfully."
+          : "An error occurred. Please try again."
+        )}
+      </Typography>
 
-            {/* Message */}
-            <DialogPrimitive.Description className="result-modal-message">
-              {message || (isNext
-                ? "The system has automatically moved to the next evaluation period."
-                : isSuccess
-                ? "The action was completed successfully."
-                : "An error occurred. Please try again."
-              )}
-            </DialogPrimitive.Description>
-
-            {/* Close Button */}
-            <button
-              className="result-modal-btn"
-              style={{
-                background: isNext ? "#800000" : (isSuccess ? "#15803D" : "#EF4444"),
-                boxShadow: isNext
-                  ? "0 2px 8px rgba(128,0,0,0.22)"
-                  : isSuccess
-                  ? "0 2px 8px rgba(21,128,61,0.2)"
-                  : "0 2px 8px rgba(239,68,68,0.2)",
-              }}
-              onClick={handleClose}
-            >
-              {buttonText || (isNext ? "Got it!" : isSuccess ? "Got it!" : "Try Again")}
-            </button>
-          </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+      {/* Close Button */}
+      <Button
+        variant="contained"
+        fullWidth
+        onClick={handleClose}
+        sx={{
+          padding: '11px 32px',
+          fontSize: '13.5px',
+          fontWeight: 600,
+          color: '#ffffff',
+          borderRadius: '6px',
+          textTransform: 'none',
+          background: isNext ? "#580000" : (isSuccess ? "#15803D" : "#EF4444"),
+          boxShadow: isNext
+            ? "0 2px 8px rgba(88,0,0,0.22)"
+            : isSuccess
+            ? "0 2px 8px rgba(21,128,61,0.2)"
+            : "0 2px 8px rgba(239,68,68,0.2)",
+          '&:hover': {
+            background: isNext ? "#7a0c0c" : (isSuccess ? "#15803D" : "#EF4444"),
+            filter: 'brightness(1.1)',
+            transform: 'translateY(-1px)',
+            boxShadow: isNext
+              ? "0 4px 12px rgba(88,0,0,0.3)"
+              : isSuccess
+              ? "0 4px 12px rgba(21,128,61,0.3)"
+              : "0 4px 12px rgba(239,68,68,0.3)",
+          }
+        }}
+      >
+        {buttonText || (isNext ? "Got it!" : isSuccess ? "Got it!" : "Try Again")}
+      </Button>
+    </Dialog>
   )
 }

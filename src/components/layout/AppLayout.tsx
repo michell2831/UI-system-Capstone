@@ -2,6 +2,10 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Toaster } from '@/components/ui/toaster'
+import { Box } from '@mui/material'
+
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 interface SidebarContextType {
   isCollapsed: boolean
@@ -24,44 +28,49 @@ export function AppLayout() {
   const [isCollapsed, setCollapsed] = useState(false)
   const [isMobileOpen, setMobileOpen] = useState(false)
 
+  const theme = useTheme()
+  const isMdDown = useMediaQuery(theme.breakpoints.down('md'))
+  const isLgDown = useMediaQuery(theme.breakpoints.down('lg'))
+
   useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth
-      if (w < 768) {
-        setMobileOpen(false) // Close drawer when switching to mobile
-      } else if (w < 1024) {
-        setCollapsed(true)  // Collapse on tablet
-      } else {
-        setCollapsed(false) // Expand on desktop
-      }
+    if (isMdDown) {
+      setMobileOpen(false) // Close drawer when switching to mobile
+    } else if (isLgDown) {
+      setCollapsed(true)  // Collapse on tablet
+    } else {
+      setCollapsed(false) // Expand on desktop
     }
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [isMdDown, isLgDown])
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, setCollapsed, isMobileOpen, setMobileOpen }}>
-      <div className="flex h-screen w-screen overflow-hidden bg-background font-sans">
+      <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', bgcolor: 'background.default', fontFamily: 'var(--font-ui)' }}>
         {/* Sidebar */}
         <Sidebar />
 
         {/* Backdrop for mobile drawer */}
         {isMobileOpen && (
-          <div
-            className="fixed inset-0 z-30 bg-black/40 md:hidden transition-opacity duration-300"
+          <Box
+            sx={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 30,
+              bgcolor: 'rgba(0, 0, 0, 0.4)',
+              display: { xs: 'block', md: 'none' },
+              transition: 'opacity 0.3s'
+            }}
             onClick={() => setMobileOpen(false)}
           />
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-background">
-          <main className="flex-1 flex flex-col overflow-hidden">
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden', position: 'relative', bgcolor: 'background.default' }}>
+          <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <Outlet />
-          </main>
-        </div>
+          </Box>
+        </Box>
         <Toaster />
-      </div>
+      </Box>
     </SidebarContext.Provider>
   )
 }

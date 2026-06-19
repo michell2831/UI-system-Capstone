@@ -74,7 +74,7 @@ export interface Service {
 
 export type TransactionStatus = 'pending' | 'in_progress' | 'completed'
 export type DocumentaryStatus = 'complete' | 'incomplete' | 'for_compliance'
-export type SlaStatus = 'compliant' | 'non_compliant' | 'pending_computation'
+export type SlaStatus = 'compliant' | 'non_compliant' | 'pending_computation' | 'overridden'
 
 // ─── Audit ────────────────────────────────────────────────────────────────────
 
@@ -112,6 +112,9 @@ export interface Transaction {
   sla_target_seconds: number
   sla_status: SlaStatus
   is_sla_breached: boolean
+  is_overridden?: boolean
+  override_reason?: string
+  override_document_name?: string
   client_name: string
   client_type?: string | null
   student_number?: string | null
@@ -119,6 +122,7 @@ export interface Transaction {
   year_level?: string | null
   contact_number?: string | null
   organization?: string | null
+  org_level?: string | null
   service_specific_data?: Record<string, unknown> | null
   audit_timeline?: AuditTimelineItem[]
   remarks: string | null
@@ -168,6 +172,7 @@ export interface CreateTransactionDto {
   year_level?: string
   contact_number?: string
   organization?: string
+  org_level?: string
   remarks?: string
   documentation_status?: DocumentaryStatus
   service_specific_data?: Record<string, unknown>

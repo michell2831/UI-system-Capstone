@@ -5,13 +5,14 @@ import { useAuth } from '@/auth/AuthContext'
 import { getTransactionsApi, getServicesApi } from '@/api/mockApi'
 import type { Transaction, Service, TransactionStatus } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent } from '@/components/ui/card'
 import { StatusBadge, SLABadge, DocumentaryBadge } from '@/components/shared/StatusBadge'
 import { TransactionModal } from '@/components/transactions/TransactionModal'
 import { formatDateTime, formatDuration } from '@/utils/timeUtils'
-import { cn } from '@/utils/cn'
+import { 
+  Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel, 
+  Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+  Paper, InputAdornment, Chip 
+} from '@mui/material'
 
 type FilterStatus = 'all' | TransactionStatus
 
@@ -50,159 +51,227 @@ export function TransactionsPage() {
   })
 
   return (
-    <div className="flex flex-col h-full bg-[#F5F7FA]">
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#F5F7FA' }}>
       <TopBar />
 
-      <div className="flex-1 p-6 space-y-5 overflow-auto">
-        {/* Page Title — EMS-014: office name prominently displayed */}
-        <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="page-title text-2xl">Service Transactions</h2>
+      <Box sx={{ flex: 1, p: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        {/* Page Title */}
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <Typography variant="h5" sx={{ fontFamily: "'DM Serif Display', Georgia, serif", color: '#0F172A', fontWeight: 500 }}>
+              Service Transactions
+            </Typography>
             {user?.office_name && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary px-2.5 py-1 text-xs font-semibold">
-                <Building2 className="h-3 w-3" />
-                {user.office_name}
-              </span>
+              <Chip
+                icon={<Building2 style={{ width: 12, height: 12 }} />}
+                label={user.office_name}
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(88, 0, 0, 0.08)',
+                  color: '#580000',
+                  borderColor: 'rgba(88, 0, 0, 0.2)',
+                  border: '1px solid',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': { color: 'inherit' }
+                }}
+              />
             )}
             {user?.role === 'opcr_evaluator' && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 text-xs font-semibold">
-                <ShieldCheck className="h-3 w-3" />
-                All Offices · Read-only
-              </span>
+              <Chip
+                icon={<ShieldCheck style={{ width: 12, height: 12 }} />}
+                label="All Offices · Read-only"
+                size="small"
+                sx={{
+                  bgcolor: '#FFFBEB',
+                  color: '#B45309',
+                  borderColor: '#FDE68A',
+                  border: '1px solid',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': { color: 'inherit' }
+                }}
+              />
             )}
-          </div>
-          {/* EMS-013: office-scoped data isolation confirmation */}
-          <p className="text-xs text-muted-foreground mt-1">
+          </Box>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, fontSize: '12px' }}>
             {user?.role === 'opcr_evaluator'
               ? 'Viewing transactions across all offices (OPCR Evaluator access).'
               : `Office-scoped view — only transactions from ${user?.office_name ?? 'your office'} are visible.`}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 w-full">
-          <div className="flex flex-wrap items-center gap-3 flex-1">
-            <div className="relative w-full sm:w-[350px]">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
-              <input
-                type="text"
-                placeholder="Search transactions..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-1 focus:ring-[#580000] placeholder:text-muted-foreground/60 transition-all h-14 md:h-12"
-              />
-            </div>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, width: '100%' }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, flex: 1 }}>
+            <TextField
+              sx={{ width: { xs: '100%', sm: '350px' }, bgcolor: 'white' }}
+              placeholder="Search transactions..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search style={{ width: 16, height: 16, color: '#6b7280' }} />
+                    </InputAdornment>
+                  ),
+                }
+              }}
+            />
 
-            <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
-              <SelectTrigger className="w-40 h-14 md:h-12 bg-white">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <SelectValue placeholder="Status" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <FormControl sx={{ width: { xs: '100%', sm: '160px' }, bgcolor: 'white' }}>
+              <InputLabel id="status-filter-label">Status</InputLabel>
+              <Select
+                labelId="status-filter-label"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                label="Status"
+                startAdornment={
+                  <InputAdornment position="start">
+                    <Filter style={{ width: 16, height: 16, color: '#6b7280' }} />
+                  </InputAdornment>
+                }
+              >
+                <MenuItem value="all">All Status</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="in_progress">In Progress</MenuItem>
+                <MenuItem value="completed">Completed</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
           {!isReadOnly && (
-            <Button onClick={() => setCreateOpen(true)} className="bg-[#580000] text-white hover:bg-[#7a0c0c] h-14 md:h-12 px-5 font-semibold shrink-0">
-              <Plus className="h-4 w-4 mr-1.5" />
+            <Button
+              variant="contained"
+              onClick={() => setCreateOpen(true)}
+              startIcon={<Plus style={{ width: 16, height: 16 }} />}
+              sx={{
+                bgcolor: '#580000',
+                color: 'white',
+                fontWeight: 600,
+                px: 3,
+                py: 1.5,
+                textTransform: 'none',
+                height: '40px',
+                width: { xs: '100%', sm: 'auto' },
+                '&:hover': { bgcolor: '#7a0c0c' }
+              }}
+            >
               New Transaction
             </Button>
           )}
-        </div>
+        </Box>
 
         {/* Counts */}
-        <p className="text-base text-muted-foreground">
+        <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
           Showing {filtered.length} of {transactions.length} transactions
           {isReadOnly && ' · Read-only (OPCR Evaluator)'}
-        </p>
+        </Typography>
 
         {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center h-40">
-            <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px' }}>
+            <Box 
+              sx={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: '4px solid #580000',
+                borderTopColor: 'transparent',
+                animation: 'spin 1s linear infinite',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(360deg)' },
+                }
+              }}
+            />
+          </Box>
         ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto overflow-hidden rounded-[10px] border border-gray-200 shadow-sm">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left px-4 py-3 text-base font-bold">Service</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">Client</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">Time In</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">Assigned To</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">Status</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">Documents</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">SLA</th>
-                      <th className="text-left px-4 py-3 text-base font-bold">Duration</th>
-                      <th className="px-4 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.length === 0 && (
-                      <tr>
-                        <td colSpan={9} className="text-center py-12 text-muted-foreground text-sm">
-                          No transactions found.
-                        </td>
-                      </tr>
-                    )}
-                    {filtered.map((t) => (
-                      <tr
-                        key={t.id}
-                        className={cn(
-                          'border-b border-border last:border-0',
-                          t.is_sla_breached && 'row-breach',
-                        )}
-                      >
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-foreground truncate max-w-[200px]" title={t.service_name}>
-                            {t.service_name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{t.service_category}</p>
-                        </td>
-                        <td className="px-4 py-3 text-foreground">{t.client_name}</td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDateTime(t.time_in)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {t.assigned_to_name ?? <span className="italic text-xs">Unassigned</span>}
-                        </td>
-                        <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
-                        <td className="px-4 py-3"><DocumentaryBadge status={t.documentary_status} /></td>
-                        <td className="px-4 py-3">
-                          <SLABadge status={t.sla_status} isBreached={t.is_sla_breached} />
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                          {t.processing_time_seconds !== null
-                            ? formatDuration(t.processing_time_seconds)
-                            : '—'}
-                          {' '}/ {formatDuration(t.sla_target_seconds)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Link
-                            to={`/transactions/${t.id}`}
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                          >
-                            View <ArrowRight className="h-3 w-3" />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <TableContainer component={Paper} sx={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <Table sx={{ minWidth: { xs: 'auto', md: 650 } }}>
+              <TableHead sx={{ bgcolor: '#580000' }}>
+                <TableRow>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px' }}>Service</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px' }}>Client</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>Time In</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>Assigned To</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px' }}>Status</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', sm: 'table-cell' } }}>Documents</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>SLA</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>Duration</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700 }} />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={9} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                      No transactions found.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filtered.map((t) => {
+                  const isBreached = t.is_sla_breached
+                  const rowBg = isBreached ? 'rgba(226, 75, 74, 0.03)' : 'inherit'
+                  const borderStyle = isBreached ? '4px solid #E24B4A' : 'inherit'
+                  return (
+                    <TableRow
+                      key={t.id}
+                      sx={{
+                        bgcolor: rowBg,
+                        '& > td:first-of-type': { borderLeft: borderStyle },
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.015)' },
+                      }}
+                    >
+                      <TableCell>
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: 'text.primary', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={t.service_name}>
+                          {t.service_name}
+                        </Typography>
+                        <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>{t.service_category}</Typography>
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '13.5px', color: 'text.primary' }}>{t.client_name}</TableCell>
+                      <TableCell sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap', display: { xs: 'none', md: 'table-cell' } }}>
+                        {formatDateTime(t.time_in)}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '13px', color: 'text.secondary', display: { xs: 'none', md: 'table-cell' } }}>
+                        {t.assigned_to_name ?? <Typography component="span" sx={{ fontStyle: 'italic', fontSize: '12px', color: 'text.secondary' }}>Unassigned</Typography>}
+                      </TableCell>
+                      <TableCell><StatusBadge status={t.status} /></TableCell>
+                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}><DocumentaryBadge status={t.documentary_status} /></TableCell>
+                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                        <SLABadge status={t.sla_status} isBreached={t.is_sla_breached} />
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap', display: { xs: 'none', md: 'table-cell' } }}>
+                        {t.processing_time_seconds !== null
+                          ? formatDuration(t.processing_time_seconds)
+                          : '—'}
+                        {' '}/ {formatDuration(t.sla_target_seconds)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          component={Link}
+                          to={`/transactions/${t.id}`}
+                          variant="text"
+                          size="small"
+                          endIcon={<ArrowRight style={{ width: 12, height: 12 }} />}
+                          sx={{
+                            color: '#580000',
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
+                          }}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </div>
+      </Box>
 
       <TransactionModal
         open={createOpen}
@@ -211,6 +280,6 @@ export function TransactionsPage() {
         currentUser={user}
         onCreated={(transaction) => setTransactions((prev) => [transaction, ...prev])}
       />
-    </div>
+    </Box>
   )
 }

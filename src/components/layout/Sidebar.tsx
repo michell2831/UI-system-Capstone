@@ -1,17 +1,344 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import {
-  LayoutDashboard, Users, ClipboardList,
-  FolderOpen, BarChart3, ChevronDown, ChevronRight, ScrollText,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+
+// MUI Outlined Icons — matching ARMS sidebar style
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined'
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
+import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
+import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined'
+import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined'
+
 import { useAuth } from '@/auth/AuthContext'
 import { useSidebar } from './AppLayout'
-import { cn } from '@/utils/cn'
 import { toast } from '@/hooks/useToast'
 import PUPLogo from '../../Asset/PUP_LOGO.png'
+import { Box, Collapse } from '@mui/material'
 
-type NavIcon = React.ComponentType<{ className?: string }>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NavIcon = React.ComponentType<any>
 
+/* ─────────────────────────────────────────────
+   Injected CSS — mirrors ARMS sidebar exactly
+───────────────────────────────────────────── */
+const SIDEBAR_CSS = `
+  .ems-sidebar {
+    width: 256px;
+    min-height: 100vh;
+    background: #580000;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    font-family: 'DM Sans', sans-serif;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    color: #fff;
+    z-index: 40;
+    overflow: hidden;
+  }
+  .ems-sidebar.collapsed {
+    width: 64px;
+  }
+
+  /* ── Mobile drawer ── */
+  @media (max-width: 899px) {
+    .ems-sidebar {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+    }
+    .ems-sidebar.mobile-hidden {
+      transform: translateX(-100%);
+    }
+    .ems-sidebar.mobile-visible {
+      transform: translateX(0);
+    }
+  }
+  @media (min-width: 900px) {
+    .ems-sidebar {
+      position: static;
+    }
+  }
+
+  /* ── Logo Area ── */
+  .ems-logo-area {
+    height: 64px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.1);
+    gap: 12px;
+    transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ems-sidebar.collapsed .ems-logo-area {
+    padding: 0 14px;
+    justify-content: center;
+  }
+
+  .ems-logo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: brightness(1.1);
+    flex-shrink: 0;
+  }
+
+  .ems-logo-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 1;
+    width: auto;
+    visibility: visible;
+    transition: opacity 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ems-sidebar.collapsed .ems-logo-text {
+    opacity: 0;
+    width: 0;
+    visibility: hidden;
+  }
+
+  .ems-logo-name {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .ems-logo-sub {
+    font-size: 10px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    line-height: 1;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+
+  /* ── Nav Area ── */
+  .ems-nav {
+    flex: 1;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .ems-nav::-webkit-scrollbar { display: none; }
+
+  /* ── Section Title ── */
+  .ems-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #C8960C;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 16px 24px 8px 24px;
+    opacity: 0.8;
+    user-select: none;
+    margin: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+  .ems-sidebar.collapsed .ems-section-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+  }
+
+  /* ── Section Divider ── */
+  .ems-section-divider {
+    height: 0;
+    opacity: 0;
+    margin: 0 12px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ems-sidebar.collapsed .ems-section-divider {
+    height: 1px;
+    opacity: 1;
+    margin: 8px 12px;
+  }
+
+  /* ── Nav Link (shared base) ── */
+  .ems-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin: 2px 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    border-left: 4px solid transparent;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    width: calc(100% - 24px);
+    box-sizing: border-box;
+    min-height: 40px;
+    text-decoration: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  .ems-sidebar.collapsed .ems-nav-link {
+    gap: 0;
+    justify-content: center;
+    padding: 10px 15px;
+    margin: 2px 8px;
+    width: calc(100% - 16px);
+  }
+  .ems-nav-link:hover {
+    color: #ffffff;
+    background: rgba(255,255,255,0.1);
+  }
+  .ems-nav-link.active {
+    background: rgba(0,0,0,0.2);
+    border-left: 4px solid #C8960C;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    color: #ffffff;
+    font-weight: 500;
+  }
+
+  /* ── Nav Label ── */
+  .ems-nav-label {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    width: auto;
+    visibility: visible;
+    transition: opacity 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ems-sidebar.collapsed .ems-nav-label {
+    opacity: 0;
+    width: 0;
+    visibility: hidden;
+  }
+
+  /* ── Icon ── */
+  .ems-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: inherit;
+  }
+
+  /* ── Dropdown children container ── */
+  .ems-children {
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    margin-left: 28px;
+    margin-right: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .ems-sidebar.collapsed .ems-children {
+    padding-left: 0;
+    border-left: none;
+    margin-left: 0;
+    margin-right: 0;
+    background: rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 6px 0;
+  }
+
+  /* ── Dropdown group button ── */
+  .ems-group-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin: 2px 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    border-left: 4px solid transparent;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    width: calc(100% - 24px);
+    box-sizing: border-box;
+    min-height: 40px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    text-align: left;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+  }
+  .ems-sidebar.collapsed .ems-group-btn {
+    justify-content: center;
+    gap: 0;
+    padding: 10px 15px;
+    margin: 2px 8px;
+    width: calc(100% - 16px);
+  }
+  .ems-group-btn:hover {
+    color: #ffffff;
+    background: rgba(255,255,255,0.1);
+  }
+  .ems-group-btn-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .ems-sidebar.collapsed .ems-group-btn-left {
+    gap: 0;
+  }
+
+  /* ── Footer ── */
+  .ems-footer {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.1);
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    user-select: none;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 16px 20px;
+    opacity: 1;
+    height: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: auto;
+  }
+  .ems-sidebar.collapsed .ems-footer {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    border-top-color: transparent;
+  }
+`
+
+/* ─────────────────────────────────────────────
+   SidebarGroup Component
+───────────────────────────────────────────── */
 interface SidebarGroupProps {
   label: string
   icon: NavIcon
@@ -22,46 +349,34 @@ interface SidebarGroupProps {
 }
 
 function SidebarGroup({ label, icon: Icon, isOpen, onToggle, isCollapsed, children }: SidebarGroupProps) {
-  if (isCollapsed) {
-    return (
-      <div className="py-2 flex flex-col items-center">
-        <button
-          onClick={onToggle}
-          title={label}
-          className="p-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-        >
-          <Icon className="h-5 w-5" />
-        </button>
-        {isOpen && (
-          <div className="mt-1 flex flex-col gap-1 w-full items-center bg-black/10 py-1.5 rounded">
-            {children}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-1">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all group font-medium"
-      >
-        <div className="flex items-center gap-3">
-          <Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" />
-          <span>{label}</span>
-        </div>
-        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+      {/* Parent button — stays in place; children expand BELOW */}
+      <button className="ems-group-btn" onClick={onToggle} title={isCollapsed ? label : undefined}>
+        <span className="ems-group-btn-left">
+          <Icon className="ems-icon" />
+          <span className="ems-nav-label">{label}</span>
+        </span>
+        {!isCollapsed && (
+          isOpen
+            ? <ChevronDown style={{ width: 16, height: 16, flexShrink: 0 }} />
+            : <ChevronRight style={{ width: 16, height: 16, flexShrink: 0 }} />
+        )}
       </button>
-      {isOpen && (
-        <div className="pl-6 pr-2 py-1 space-y-1 border-l border-white/10 ml-5 transition-all">
+
+      {/* Children expand DOWNWARD below the button */}
+      <Collapse in={isOpen} timeout="auto" unmountOnExit>
+        <div className="ems-children">
           {children}
         </div>
-      )}
-    </div>
+      </Collapse>
+    </Box>
   )
 }
 
+/* ─────────────────────────────────────────────
+   Main Sidebar
+───────────────────────────────────────────── */
 export function Sidebar() {
   const { user } = useAuth()
   const location = useLocation()
@@ -73,7 +388,7 @@ export function Sidebar() {
   const [recordsMenuOpen, setRecordsMenuOpen] = useState(false)
   const [reportsMenuOpen, setReportsMenuOpen] = useState(false)
 
-  // Auto-expand/collapse dropdowns when location changes
+  // Auto-expand dropdowns when location changes
   useEffect(() => {
     if (location.pathname.startsWith('/users')) {
       setUserMenuOpen(true)
@@ -91,167 +406,143 @@ export function Sidebar() {
     })
   }
 
+  // Compute sidebar class
+  const sidebarClass = [
+    'ems-sidebar',
+    isCollapsed ? 'collapsed' : '',
+    // mobile classes (applied only on xs/sm via CSS media query logic)
+    isMobileOpen ? 'mobile-visible' : 'mobile-hidden',
+  ].filter(Boolean).join(' ')
+
+  /* ── Renders a real NavLink ── */
   const renderLink = (to: string, label: string, icon: NavIcon | null = null, isMock = false) => {
     const Icon = icon
-
-    const activeClass = "bg-[#7a0c0c] text-white font-semibold border-l-4 border-[#C8960C]"
-    const inactiveClass = "text-white/70 hover:bg-white/10 hover:text-white"
 
     if (isMock) {
       return (
         <button
+          key={to + label}
+          className="ems-nav-link"
           onClick={() => handleMockClick(label)}
-          className={cn(
-            "flex w-full items-center text-left transition-all",
-            isCollapsed
-              ? "p-2 rounded-lg justify-center text-white/70 hover:bg-white/10 hover:text-white"
-              : "gap-3 px-3 py-2 rounded-md text-xs font-medium " + inactiveClass
-          )}
           title={isCollapsed ? label : undefined}
         >
-          {Icon && <Icon className={cn("shrink-0", isCollapsed ? "h-5 w-5" : "h-3.5 w-3.5")} />}
-          {!isCollapsed && <span>{label}</span>}
+          {Icon && <Icon className="ems-icon" />}
+          <span className="ems-nav-label">{label}</span>
         </button>
       )
     }
 
     return (
       <NavLink
+        key={to}
         to={to}
+        className={({ isActive }) => ['ems-nav-link', isActive ? 'active' : ''].filter(Boolean).join(' ')}
         onClick={() => setMobileOpen(false)}
-        className={({ isActive }) => cn(
-          "flex items-center transition-all",
-          isCollapsed
-            ? "p-2.5 rounded-lg justify-center"
-            : "gap-3 px-3 py-2 rounded-md text-sm font-medium",
-          isActive ? activeClass : inactiveClass
-        )}
         title={isCollapsed ? label : undefined}
       >
-        {Icon && <Icon className={cn("shrink-0", isCollapsed ? "h-5 w-5" : "h-4 w-4")} />}
-        {!isCollapsed && <span>{label}</span>}
+        {Icon && <Icon className="ems-icon" />}
+        <span className="ems-nav-label">{label}</span>
       </NavLink>
     )
   }
 
   return (
-    <aside
-      className={cn(
-        "min-h-screen bg-[#580000] border-r border-[#4a0000] flex flex-col transition-all duration-300 z-40 relative shadow-xl shrink-0 text-white",
-        // Desktop / Tablet Widths
-        isCollapsed ? "w-16" : "w-64",
-        // Mobile Drawer behavior
-        "fixed md:static top-0 bottom-0 left-0",
-        isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      )}
-    >
-      {/* Brand Header */}
-      <div className={cn("h-16 border-b border-white/10 flex items-center justify-between px-6 shrink-0", isCollapsed ? "justify-center px-0" : "")}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 flex items-center justify-center shrink-0">
-            <img src={PUPLogo} alt="PUP Caloocan logo" className="w-full h-full object-contain filter brightness-110 drop-shadow" />
-          </div>
-          {!isCollapsed && (
-            <div>
-              <p className="font-serif font-bold text-sm tracking-wide text-white leading-none">PUP Caloocan</p>
-              <p className="text-[10px] text-white/50 font-medium leading-none mt-1">OPCR System</p>
+    <>
+      {/* Inject ARMS-matching CSS */}
+      <style dangerouslySetInnerHTML={{ __html: SIDEBAR_CSS }} />
+
+      <aside className={sidebarClass}>
+        {/* ── Brand / Logo Area ── */}
+        <div className="ems-logo-area">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src={PUPLogo} alt="PUP Caloocan logo" className="ems-logo-img" />
+            <div className="ems-logo-text">
+              <span className="ems-logo-name">PUP Caloocan</span>
+              <span className="ems-logo-sub">OPCR System</span>
             </div>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Navigation Items */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto scrollbar-none space-y-2">
-        {/* MAIN Group */}
-        {!isCollapsed ? (
-  /* Inayos ko: ginawang text-yellow-500/70 (yellow na may 70% opacity) */
-          <div className="px-3 pt-4 pb-1.5 text-[10px] font-bold tracking-wider text-yellow-500/40 uppercase select-none">
-            MAIN
-          </div>
-        ) : (
-          <div className="border-t border-yellow-500/30 my-3" />
-        )}
+        {/* ── Navigation ── */}
+        <nav className="ems-nav">
 
-        {/* Dashboard Link */}
-        {renderLink('/dashboard', 'Dashboard', LayoutDashboard)}
+          {/* MAIN section */}
+          <div className="ems-section-title">MAIN</div>
+          <div className="ems-section-divider" />
 
-        {/* User Management Dropdown */}
-        {(user?.role === 'subsystem_admin' || user?.role === 'opcr_evaluator') && (
-          <SidebarGroup
-            label="User Management"
-            icon={Users}
-            isOpen={userMenuOpen}
-            onToggle={() => setUserMenuOpen(!userMenuOpen)}
-            isCollapsed={isCollapsed}
-          >
-            {renderLink('/users', 'Users')}
-            {renderLink('/roles', 'Roles', null, true)}
-            {renderLink('/permissions', 'Permissions', null, true)}
-          </SidebarGroup>
-        )}
+          {renderLink('/dashboard', 'Dashboard', GridViewOutlinedIcon)}
 
-        {/* OPCR Dropdown */}
-        <SidebarGroup
-          label="OPCR"
-          icon={ClipboardList}
-          isOpen={opcrMenuOpen}
-          onToggle={() => setOpcrMenuOpen(!opcrMenuOpen)}
-          isCollapsed={isCollapsed}
-        >
-          {renderLink('/sla-review', 'Evaluation Period')}
-          {renderLink('/transactions', 'Transactions')}
-        </SidebarGroup>
-
-        {/* INSIGHTS Group */}
-        {!isCollapsed ? (
-  /* Inayos ko: ginawang text-yellow-500/70 (yellow na may 70% opacity) */
-            <div className="px-3 pt-4 pb-1.5 text-[10px] font-bold tracking-wider text-yellow-500/40 uppercase select-none">
-              INSIGHTS
-            </div>
-          ) : (
-            <div className="border-t border-yellow-500/30 my-3" />
+          {/* User Management (admin / evaluator only) */}
+          {(user?.role === 'subsystem_admin' || user?.role === 'opcr_evaluator') && (
+            <SidebarGroup
+              label="User Management"
+              icon={GroupOutlinedIcon}
+              isOpen={userMenuOpen}
+              onToggle={() => setUserMenuOpen(!userMenuOpen)}
+              isCollapsed={isCollapsed}
+            >
+              {renderLink('/users', 'Users')}
+              {renderLink('/roles', 'Roles', null, true)}
+              {renderLink('/permissions', 'Permissions', null, true)}
+            </SidebarGroup>
           )}
 
-        {/* Records Dropdown */}
-        {(user?.role === 'subsystem_admin' || user?.role === 'opcr_evaluator') && (
+          {/* OPCR Dropdown */}
           <SidebarGroup
-            label="Records"
-            icon={FolderOpen}
-            isOpen={recordsMenuOpen}
-            onToggle={() => setRecordsMenuOpen(!recordsMenuOpen)}
+            label="OPCR"
+            icon={AssignmentOutlinedIcon}
+            isOpen={opcrMenuOpen}
+            onToggle={() => setOpcrMenuOpen(!opcrMenuOpen)}
             isCollapsed={isCollapsed}
           >
-            {renderLink('/records/status', 'Documentary Status', null, true)}
-            {renderLink('/records/reports', 'Documentary Reports', null, true)}
+            {renderLink('/sla-review', 'Evaluation Period')}
+            {renderLink('/transactions', 'Transactions')}
           </SidebarGroup>
-        )}
 
-        {/* Audit Log — EMS-026 (Admin & OPCR only) */}
-        {(user?.role === 'subsystem_admin' || user?.role === 'opcr_evaluator') && (
-          renderLink('/audit-log', 'Audit Log', ScrollText)
-        )}
+          {/* INSIGHTS section */}
+          <div className="ems-section-title">INSIGHTS</div>
+          <div className="ems-section-divider" />
 
-        {/* Reports Dropdown */}
-        <SidebarGroup
-          label="Reports"
-          icon={BarChart3}
-          isOpen={reportsMenuOpen}
-          onToggle={() => setReportsMenuOpen(!reportsMenuOpen)}
-          isCollapsed={isCollapsed}
-        >
-          {renderLink('/reports/overview', 'Reports Overview', null, true)}
-        </SidebarGroup>
+          {/* Records (admin / evaluator only) */}
+          {(user?.role === 'subsystem_admin' || user?.role === 'opcr_evaluator') && (
+            <SidebarGroup
+              label="Records"
+              icon={FolderOpenOutlinedIcon}
+              isOpen={recordsMenuOpen}
+              onToggle={() => setRecordsMenuOpen(!recordsMenuOpen)}
+              isCollapsed={isCollapsed}
+            >
+              {renderLink('/records/status', 'Documentary Status', null, true)}
+              {renderLink('/records/reports', 'Documentary Reports', null, true)}
+            </SidebarGroup>
+          )}
 
-        {/* Analytics Mock Link */}
-        {renderLink('/analytics', 'Analytics', BarChart3, true)}
-      </nav>
+          {/* Audit Log (admin / evaluator only) */}
+          {(user?.role === 'subsystem_admin' || user?.role === 'opcr_evaluator') &&
+            renderLink('/audit-log', 'Audit Log', ManageSearchOutlinedIcon)
+          }
 
-      {/* Sidebar Footer Branding */}
-      {!isCollapsed && (
-        <div className="mt-auto px-6 py-4 border-t border-white/10 text-xs font-semibold text-white/90 leading-normal select-none">
+          {/* Reports Dropdown */}
+          <SidebarGroup
+            label="Reports"
+            icon={BarChartOutlinedIcon}
+            isOpen={reportsMenuOpen}
+            onToggle={() => setReportsMenuOpen(!reportsMenuOpen)}
+            isCollapsed={isCollapsed}
+          >
+            {renderLink('/reports/overview', 'Reports Overview', null, true)}
+          </SidebarGroup>
+
+          {/* Analytics (mock) */}
+          {renderLink('/analytics', 'Analytics', InsightsOutlinedIcon, true)}
+
+        </nav>
+
+        {/* ── Footer ── */}
+        <div className="ems-footer">
           Evaluation and Monitoring System
         </div>
-      )}
-    </aside>
+      </aside>
+    </>
   )
 }

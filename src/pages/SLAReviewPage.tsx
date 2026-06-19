@@ -5,43 +5,45 @@ import { useAuth } from '@/auth/AuthContext'
 import { getTransactionsApi } from '@/api/mockApi'
 import type { Transaction, ServiceCategory } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SLABadge, StatusBadge } from '@/components/shared/StatusBadge'
 import { formatDateTime, formatDuration } from '@/utils/timeUtils'
 import { slaPercent } from '@/utils/slaUtils'
-import { cn } from '@/utils/cn'
 import { MOCK_SERVICES } from '@/utils/mockData'
+import {
+  Box, Typography, Card, CardContent, Grid,
+  FormControl, InputLabel, Select, MenuItem, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Paper, InputAdornment, Button
+} from '@mui/material'
 
-// ── Accent colours (mirrors DashboardPage palette) ─────────────────────────
 const T = {
   maroon: '#580000',
-  green:  '#22C55E',
+  green:  '#1D9E75',
   red:    '#E24B4A',
+  warning: '#BA7517',
 }
 
-// ── InteractiveCard — coloured top-border + hover lift (same as Dashboard) ──
-function InteractiveCard({
-  accentColor,
-  className,
-  children,
-}: {
+interface InteractiveCardProps {
   accentColor: string
-  className?: string
   children: React.ReactNode
-}) {
+  borderColor?: string
+  noHover?: boolean
+}
+
+function InteractiveCard({ accentColor, children, borderColor, noHover = false }: InteractiveCardProps) {
   const [hovered, setHovered] = useState(false)
   return (
     <Card
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={cn('transition-all duration-300 ease-in-out', className)}
-      style={{
+      onMouseEnter={() => !noHover && setHovered(true)}
+      onMouseLeave={() => !noHover && setHovered(false)}
+      sx={{
         borderTop: `4px solid ${accentColor}`,
+        borderColor: borderColor || 'divider',
+        transition: 'all 0.3s ease-in-out',
         boxShadow: hovered
-          ? '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)'
-          : '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
-        transform: hovered ? 'scale(1.02)' : 'scale(1)',
+          ? '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)'
+          : '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        borderRadius: '12px',
       }}
     >
       {children}
@@ -92,223 +94,282 @@ export function SLAReviewPage() {
     : 0
 
   return (
-    <div className="flex flex-col h-full bg-[#F5F7FA]">
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#F5F7FA' }}>
       <TopBar />
 
-      <div className="flex-1 p-6 space-y-5 overflow-auto">
+      <Box sx={{ flex: 1, p: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Page Title */}
-        <div>
-          <h2 className="page-title text-2xl">Evaluation Period</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Review active service compliance logs and targets.</p>
-        </div>
+        <Box>
+          <Typography variant="h5" sx={{ fontFamily: "'DM Serif Display', Georgia, serif", color: '#0F172A', fontWeight: 500 }}>
+            Evaluation Period
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, fontSize: '12px' }}>
+            Review active service compliance logs and targets.
+          </Typography>
+        </Box>
+
         {/* Summary row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <InteractiveCard accentColor={T.maroon}> {/* ✅ Compliance Rate — maroon accent */}
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{complianceRate}%</p>
-                  <p className="text-xs text-muted-foreground">Compliance Rate</p>
-                </div>
-              </div>
-            </CardContent>
-          </InteractiveCard>
-          <InteractiveCard accentColor={T.green}> {/* ✅ Compliant — green accent */}
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                <div>
-                  <p className="text-2xl font-bold text-success">
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <InteractiveCard accentColor={T.maroon}>
+              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
+                <TrendingUp style={{ width: 28, height: 28, color: '#580000' }} />
+                <Box>
+                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: 'text.primary', lineHeight: 1.1 }}>
+                    {complianceRate}%
+                  </Typography>
+                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
+                    Compliance Rate
+                  </Typography>
+                </Box>
+              </CardContent>
+            </InteractiveCard>
+          </Grid>
+
+          <Grid size={{ xs: 6, md: 3 }}>
+            <InteractiveCard accentColor={T.green}>
+              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
+                <CheckCircle2 style={{ width: 28, height: 28, color: T.green }} />
+                <Box>
+                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: T.green, lineHeight: 1.1 }}>
                     {completed.filter((t) => t.sla_status === 'compliant').length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Compliant</p>
-                </div>
-              </div>
-            </CardContent>
-          </InteractiveCard>
-          <InteractiveCard accentColor={T.red}> {/* ✅ Non-Compliant — red accent */}
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2">
-                <XCircle className="h-5 w-5 text-destructive" />
-                <div>
-                  <p className="text-2xl font-bold text-destructive">
+                  </Typography>
+                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
+                    Compliant
+                  </Typography>
+                </Box>
+              </CardContent>
+            </InteractiveCard>
+          </Grid>
+
+          <Grid size={{ xs: 6, md: 3 }}>
+            <InteractiveCard accentColor={T.red}>
+              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
+                <XCircle style={{ width: 28, height: 28, color: T.red }} />
+                <Box>
+                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: T.red, lineHeight: 1.1 }}>
                     {completed.filter((t) => t.sla_status === 'non_compliant').length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Non-Compliant</p>
-                </div>
-              </div>
-            </CardContent>
-          </InteractiveCard>
-          <InteractiveCard accentColor={T.red}> {/* ✅ SLA Breached — red accent */}
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <div>
-                  <p className="text-2xl font-bold text-destructive">
+                  </Typography>
+                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
+                    Non-Compliant
+                  </Typography>
+                </Box>
+              </CardContent>
+            </InteractiveCard>
+          </Grid>
+
+          <Grid size={{ xs: 6, md: 3 }}>
+            <InteractiveCard accentColor={T.red}>
+              <CardContent sx={{ pt: 3, pb: '24px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
+                <AlertTriangle style={{ width: 28, height: 28, color: T.red }} />
+                <Box>
+                  <Typography sx={{ fontSize: '24px', fontWeight: 800, color: T.red, lineHeight: 1.1 }}>
                     {completed.filter((t) => t.is_sla_breached).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">SLA Breached</p>
-                </div>
-              </div>
-            </CardContent>
-          </InteractiveCard>
-        </div>
+                  </Typography>
+                  <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 600 }}>
+                    SLA Breached
+                  </Typography>
+                </Box>
+              </CardContent>
+            </InteractiveCard>
+          </Grid>
+        </Grid>
 
         {/* Category breakdown */}
         {categoryStats.length > 0 && (
-          <InteractiveCard accentColor={T.maroon}> {/* ✅ Category breakdown — maroon accent */}
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Compliance by Category</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-4 space-y-3">
-              {categoryStats.map(({ cat, total, compliant, rate, avgTime }) => (
-                <div key={cat}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-foreground">{cat}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {compliant}/{total} · avg {formatDuration(Math.round(avgTime))}
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn('h-full rounded-full transition-all', rate >= 80 ? 'bg-success' : rate >= 50 ? 'bg-warning' : 'bg-destructive')}
-                      style={{ width: `${rate}%` }}
-                    />
-                  </div>
-                  <p className={cn('text-xs mt-0.5 font-medium', rate >= 80 ? 'text-success' : rate >= 50 ? 'text-warning' : 'text-destructive')}>
-                    {rate}%
-                  </p>
-                </div>
-              ))}
+          <InteractiveCard accentColor={T.maroon}>
+            <Box sx={{ p: 3, pb: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                Compliance by Category
+              </Typography>
+            </Box>
+            <CardContent sx={{ pt: 1, pb: '24px !important', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {categoryStats.map(({ cat, total, compliant, rate, avgTime }) => {
+                const color = rate >= 80 ? T.green : rate >= 50 ? T.warning : T.red
+                return (
+                  <Box key={cat}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography sx={{ fontSize: '13.5px', fontWeight: 600 }}>{cat}</Typography>
+                      <Typography sx={{ fontSize: '12px', color: 'text.secondary' }}>
+                        {compliant}/{total} · avg {formatDuration(Math.round(avgTime))}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ width: '100%', height: '8px', bgcolor: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <Box sx={{ width: `${rate}%`, height: '100%', bgcolor: color, borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                    </Box>
+                    <Typography sx={{ fontSize: '11px', fontWeight: 700, color, mt: 0.5 }}>
+                      {rate}% Compliance
+                    </Typography>
+                  </Box>
+                )
+              })}
             </CardContent>
           </InteractiveCard>
         )}
 
-        {/* Filters + Table */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as CategoryFilter)}>
-            <SelectTrigger className="w-48 h-14 md:h-12 bg-white">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-                <SelectValue placeholder="Category" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {allCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={slaFilter} onValueChange={(v) => setSlaFilter(v as typeof slaFilter)}>
-            <SelectTrigger className="w-48 h-14 md:h-12 bg-white">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-                <SelectValue placeholder="SLA Status" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All SLA</SelectItem>
-              <SelectItem value="compliant">Compliant</SelectItem>
-              <SelectItem value="non_compliant">Non-Compliant</SelectItem>
-              <SelectItem value="breached">Breached</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground ml-auto">{filtered.length} completed transactions</p>
-        </div>
+        {/* Filters */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, width: '100%' }}>
+          <FormControl sx={{ width: { xs: '100%', sm: '200px' }, bgcolor: 'white' }} size="small">
+            <InputLabel id="category-filter-label">Category</InputLabel>
+            <Select
+              labelId="category-filter-label"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value as CategoryFilter)}
+              label="Category"
+              startAdornment={
+                <InputAdornment position="start">
+                  <Filter style={{ width: 16, height: 16, color: '#6b7280' }} />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="all">All Categories</MenuItem>
+              {allCategories.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+            </Select>
+          </FormControl>
 
+          <FormControl sx={{ width: { xs: '100%', sm: '200px' }, bgcolor: 'white' }} size="small">
+            <InputLabel id="sla-filter-label">SLA Status</InputLabel>
+            <Select
+              labelId="sla-filter-label"
+              value={slaFilter}
+              onChange={(e) => setSlaFilter(e.target.value as any)}
+              label="SLA Status"
+              startAdornment={
+                <InputAdornment position="start">
+                  <Filter style={{ width: 16, height: 16, color: '#6b7280' }} />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="all">All SLA</MenuItem>
+              <MenuItem value="compliant">Compliant</MenuItem>
+              <MenuItem value="non_compliant">Non-Compliant</MenuItem>
+              <MenuItem value="breached">Breached</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Typography variant="caption" sx={{ color: 'text.secondary', ml: { sm: 'auto' }, fontSize: '12px' }}>
+            {filtered.length} completed transactions
+          </Typography>
+        </Box>
+
+        {/* Table Content */}
         {loading ? (
-          <div className="flex items-center justify-center h-40">
-            <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px' }}>
+            <Box
+              sx={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: '4px solid #580000',
+                borderTopColor: 'transparent',
+                animation: 'spin 1s linear infinite',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(360deg)' },
+                }
+              }}
+            />
+          </Box>
         ) : (
-          <Card
-            style={{
-              borderTop: `4px solid ${T.maroon}`,
-              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
-            }}
-          > {/* ✅ Table card — static maroon accent, no hover lift */}
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left px-4 py-3 text-xs font-bold min-w-[120px]">Service</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold hidden md:table-cell">Client</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold hidden md:table-cell">Time In</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">Time Out</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">Actual</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">SLA Target</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold hidden lg:table-cell">% Used</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">Status</th>
-                      <th className="text-left px-4 py-3 text-xs font-bold">SLA</th>
-                      <th className="px-4 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.length === 0 && (
-                      <tr>
-                        <td colSpan={10} className="text-center py-12 text-muted-foreground text-sm">
-                          No completed transactions match the filter.
-                        </td>
-                      </tr>
-                    )}
-                    {filtered.map((t) => {
-                      const pct = slaPercent(t)
-                      return (
-                        <tr
-                          key={t.id}
-                          className={cn(
-                            'border-b border-border last:border-0',
-                            t.is_sla_breached && 'row-breach',
-                          )}
+          <TableContainer component={Paper} sx={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+            <Table sx={{ minWidth: { xs: 'auto', md: 650 } }}>
+              <TableHead sx={{ bgcolor: '#580000' }}>
+                <TableRow>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px' }}>Service</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px' }}>Client</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>Time In</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>Time Out</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', sm: 'table-cell' } }}>Actual</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>SLA Target</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', sm: 'table-cell' } }}>% Used</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', display: { xs: 'none', md: 'table-cell' } }}>Status</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px' }}>SLA</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 700 }} />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={10} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                      No completed transactions match the filter.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filtered.map((t) => {
+                  const pct = slaPercent(t)
+                  const isBreached = t.is_sla_breached
+                  const rowBg = isBreached ? 'rgba(226, 75, 74, 0.03)' : 'inherit'
+                  const borderStyle = isBreached ? '4px solid #E24B4A' : 'inherit'
+                  const progressColor = pct > 100 ? T.red : pct > 80 ? T.warning : T.green
+
+                  return (
+                    <TableRow
+                      key={t.id}
+                      sx={{
+                        bgcolor: rowBg,
+                        '& > td:first-of-type': { borderLeft: borderStyle },
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.015)' },
+                      }}
+                    >
+                      <TableCell>
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: 'text.primary', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={t.service_name}>
+                          {t.service_name}
+                        </Typography>
+                        <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>{t.service_category}</Typography>
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '13.5px', color: 'text.primary' }}>{t.client_name}</TableCell>
+                      <TableCell sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap', display: { xs: 'none', md: 'table-cell' } }}>
+                        {formatDateTime(t.time_in)}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap', display: { xs: 'none', md: 'table-cell' } }}>
+                        {t.time_out ? formatDateTime(t.time_out) : '—'}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '12px', fontStyle: 'normal', fontWeight: 600, whiteSpace: 'nowrap', display: { xs: 'none', sm: 'table-cell' } }}>
+                        {t.processing_time_seconds !== null ? formatDuration(t.processing_time_seconds) : '—'}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap', display: { xs: 'none', md: 'table-cell' } }}>
+                        {formatDuration(t.sla_target_seconds)}
+                      </TableCell>
+                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ width: '64px', height: '6px', bgcolor: 'rgba(0,0,0,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <Box sx={{ width: `${Math.min(pct, 100)}%`, height: '100%', bgcolor: progressColor }} />
+                          </Box>
+                          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: progressColor }}>
+                            {pct}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}><StatusBadge status={t.status} /></TableCell>
+                      <TableCell>
+                        <SLABadge status={t.sla_status} isBreached={t.is_sla_breached} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          component={Link}
+                          to={`/transactions/${t.id}`}
+                          variant="text"
+                          size="small"
+                          endIcon={<ArrowRight style={{ width: 12, height: 12 }} />}
+                          sx={{
+                            color: '#580000',
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
+                          }}
                         >
-                          <td className="px-4 py-3">
-                            <p className="font-medium truncate max-w-[180px]" title={t.service_name}>{t.service_name}</p>
-                            <p className="text-xs text-muted-foreground">{t.service_category}</p>
-                          </td>
-                          <td className="px-4 py-3 text-foreground hidden md:table-cell">{t.client_name}</td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap hidden md:table-cell">{formatDateTime(t.time_in)}</td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap hidden lg:table-cell">
-                            {t.time_out ? formatDateTime(t.time_out) : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-xs font-medium text-foreground whitespace-nowrap hidden lg:table-cell">
-                            {t.processing_time_seconds !== null ? formatDuration(t.processing_time_seconds) : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap hidden lg:table-cell">
-                            {formatDuration(t.sla_target_seconds)}
-                          </td>
-                          <td className="px-4 py-3 hidden lg:table-cell">
-                            <div className="flex items-center gap-2">
-                              <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                                <div
-                                  className={cn('h-full rounded-full', pct > 100 ? 'bg-destructive' : pct > 80 ? 'bg-warning' : 'bg-success')}
-                                  style={{ width: `${Math.min(pct, 100)}%` }}
-                                />
-                              </div>
-                              <span className={cn('text-xs font-medium', pct > 100 ? 'text-destructive' : pct > 80 ? 'text-warning' : 'text-success')}>
-                                {pct}%
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
-                          <td className="px-4 py-3">
-                            <SLABadge status={t.sla_status} isBreached={t.is_sla_breached} />
-                          </td>
-                          <td className="px-4 py-3">
-                            <Link to={`/transactions/${t.id}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                              View <ArrowRight className="h-3 w-3" />
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

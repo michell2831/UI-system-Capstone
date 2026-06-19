@@ -1,8 +1,3 @@
-/**
- * AuditLogPage — EMS-026
- * Displays an append-only, filterable audit log of all write operations
- * performed on transactions within the logged-in user's office.
- */
 import { useEffect, useState } from 'react'
 import {
   PlusCircle, RefreshCw, UserCheck, FileText, MessageSquare,
@@ -12,11 +7,11 @@ import { useAuth } from '@/auth/AuthContext'
 import { getAuditLogApi, getTransactionsApi } from '@/api/mockApi'
 import type { TransactionStatusHistory, ActionType, Transaction } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel,
+  Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  InputAdornment, Chip, Card, CardContent
+} from '@mui/material'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -29,12 +24,13 @@ const ACTION_OPTIONS: { value: string; label: string }[] = [
   { value: 'REMARKS_UPDATE',    label: 'Remarks Updated' },
 ]
 
-const ACTION_COLORS: Record<ActionType, string> = {
-  CREATE:             'bg-emerald-50 text-emerald-700 border-emerald-200',
-  STATUS_CHANGE:      'bg-blue-50 text-blue-700 border-blue-200',
-  ASSIGNMENT:         'bg-purple-50 text-purple-700 border-purple-200',
-  DOCUMENTARY_CHANGE: 'bg-amber-50 text-amber-700 border-amber-200',
-  REMARKS_UPDATE:     'bg-slate-50 text-slate-700 border-slate-200',
+// Mapping to MUI colors / palettes
+const ACTION_COLORS: Record<ActionType, { bg: string; color: string; border: string }> = {
+  CREATE:             { bg: '#EAF3DE', color: '#1D9E75', border: 'rgba(29, 158, 117, 0.2)' },
+  STATUS_CHANGE:      { bg: '#E6F1FB', color: '#1B3A6B', border: 'rgba(27, 58, 107, 0.2)' },
+  ASSIGNMENT:         { bg: '#F3E8FF', color: '#7E22CE', border: 'rgba(126, 34, 206, 0.2)' },
+  DOCUMENTARY_CHANGE: { bg: '#FFFBEB', color: '#BA7517', border: 'rgba(186, 117, 23, 0.2)' },
+  REMARKS_UPDATE:     { bg: '#F1F5F9', color: '#475569', border: 'rgba(71, 85, 105, 0.2)' },
 }
 
 const ACTION_ICON: Record<ActionType, typeof PlusCircle> = {
@@ -108,85 +104,125 @@ export function AuditLogPage() {
   const paginated = filtered.slice((page_ - 1) * PAGE_SIZE, page_ * PAGE_SIZE)
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#F5F7FA' }}>
       <TopBar />
 
-      <div className="flex-1 min-h-0 overflow-auto p-6 bg-[#F5F7FA]">
+      <Box sx={{ flex: 1, p: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Audit Log</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Append-only record of all write operations — EMS-026
-            </p>
-          </div>
-          <Badge variant="outline" className="text-xs font-mono">
-            {total} entr{total === 1 ? 'y' : 'ies'}
-          </Badge>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+          <Box>
+            <Typography variant="h5" sx={{ fontFamily: "'DM Serif Display', Georgia, serif", color: '#0F172A', fontWeight: 500 }}>
+              Audit Log
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, fontSize: '12px' }}>
+              Append-only record of all write operations — OPCR & Subsystem Monitoring
+            </Typography>
+          </Box>
+          <Chip
+            label={`${total} entries`}
+            variant="outlined"
+            size="small"
+            sx={{
+              fontFamily: 'monospace',
+              fontWeight: 600,
+              bgcolor: 'white',
+              borderColor: 'divider'
+            }}
+          />
+        </Box>
 
         {/* Search + Filter Bar */}
-        <Card className="rounded-xl border border-border shadow-sm bg-white mb-4">
-          <CardContent className="py-3 flex flex-wrap gap-3 items-center">
-            <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                className="pl-9 h-9 text-sm"
-                placeholder="Search by actor, client, service, remarks..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-              />
-            </div>
+        <Card sx={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: '12px', boxShadow: 'none', bgcolor: 'white' }}>
+          <CardContent sx={{ p: '12px !important', display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+            <TextField
+              sx={{ flex: 1, minWidth: '240px', bgcolor: 'white' }}
+              size="small"
+              placeholder="Search by actor, client, service, remarks..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search style={{ width: 16, height: 16, color: '#6b7280' }} />
+                    </InputAdornment>
+                  ),
+                }
+              }}
+            />
 
-            <Select value={actionFilter} onValueChange={(v) => { setAction(v); setPage(1) }}>
-              <SelectTrigger className="h-9 w-52 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            <FormControl sx={{ minWidth: '200px', bgcolor: 'white' }} size="small">
+              <InputLabel id="action-filter-label">Action</InputLabel>
+              <Select
+                labelId="action-filter-label"
+                value={actionFilter}
+                onChange={(e) => { setAction(e.target.value); setPage(1) }}
+                label="Action"
+              >
                 {ACTION_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
+              </Select>
+            </FormControl>
 
             <Button
-              variant="outline"
-              size="sm"
-              className="h-9 gap-2"
+              variant="outlined"
+              size="small"
               onClick={() => setShowFilters(!showFilters)}
+              startIcon={<Filter style={{ width: 14, height: 14 }} />}
+              endIcon={
+                <ChevronDown
+                  style={{
+                    width: 14,
+                    height: 14,
+                    transition: 'transform 0.2s',
+                    transform: showFilters ? 'rotate(180deg)' : 'none'
+                  }}
+                />
+              }
+              sx={{
+                height: '40px',
+                textTransform: 'none',
+                fontWeight: 600,
+                color: 'text.primary',
+                borderColor: 'divider',
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+              }}
             >
-              <Filter className="h-3.5 w-3.5" />
               Date Range
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
             </Button>
           </CardContent>
 
           {showFilters && (
-            <CardContent className="pt-0 pb-3 flex gap-4 items-center border-t border-border/60">
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-medium text-muted-foreground w-8">From</label>
-                <Input
+            <CardContent sx={{ px: 2, py: '12px !important', display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', borderTop: '1px solid #E5E7EB' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>From</Typography>
+                <TextField
                   type="date"
-                  className="h-8 text-xs w-40"
+                  size="small"
+                  sx={{ width: { xs: '100%', sm: '160px' }, bgcolor: 'white' }}
                   value={fromDate}
                   onChange={(e) => { setFromDate(e.target.value); setPage(1) }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-medium text-muted-foreground w-4">To</label>
-                <Input
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>To</Typography>
+                <TextField
                   type="date"
-                  className="h-8 text-xs w-40"
+                  size="small"
+                  sx={{ width: { xs: '100%', sm: '160px' }, bgcolor: 'white' }}
                   value={toDate}
                   onChange={(e) => { setToDate(e.target.value); setPage(1) }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
-              </div>
+              </Box>
               {(fromDate || toDate) && (
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs"
+                  variant="text"
+                  size="small"
                   onClick={() => { setFromDate(''); setToDate(''); setPage(1) }}
+                  sx={{ textTransform: 'none', color: '#580000', fontWeight: 600 }}
                 >
                   Clear
                 </Button>
@@ -196,116 +232,149 @@ export function AuditLogPage() {
         </Card>
 
         {/* Log Table */}
-        <Card className="rounded-xl border border-border shadow-sm bg-white">
-          <CardHeader className="pb-0 border-b border-border/80">
-            <CardTitle className="text-sm font-semibold text-foreground py-1">
+        <Card sx={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: '12px', boxShadow: 'none', bgcolor: 'white', overflow: 'hidden' }}>
+          <Box sx={{ p: 2, borderBottom: '1px solid #E5E7EB' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
               Activity Entries
-            </CardTitle>
-          </CardHeader>
+            </Typography>
+          </Box>
 
           {loading ? (
-            <CardContent className="flex justify-center py-12">
-              <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-            </CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px' }}>
+              <Box
+                sx={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  border: '4px solid #580000',
+                  borderTopColor: 'transparent',
+                  animation: 'spin 1s linear infinite',
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' },
+                  }
+                }}
+              />
+            </Box>
           ) : paginated.length === 0 ? (
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              No audit log entries found.
-            </CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px', color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: '13.5px' }}>No audit log entries found.</Typography>
+            </Box>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border/60">
-                    <th className="text-left text-xs font-bold px-4 py-2.5 w-40">Timestamp</th>
-                    <th className="text-left text-xs font-bold px-4 py-2.5 w-36">Action</th>
-                    <th className="text-left text-xs font-bold px-4 py-2.5">Transaction</th>
-                    <th className="text-left text-xs font-bold px-4 py-2.5 w-36">Actor</th>
-                    <th className="text-left text-xs font-bold px-4 py-2.5 w-52">Change</th>
-                    <th className="text-left text-xs font-bold px-4 py-2.5">Remarks</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
+            <TableContainer>
+              <Table sx={{ minWidth: { xs: 'auto', md: 650 } }}>
+                <TableHead sx={{ bgcolor: '#580000' }}>
+                  <TableRow>
+                     <TableRowCell label="Timestamp" width="160px" sx={{ display: { xs: 'none', sm: 'table-cell' } }} />
+                     <TableRowCell label="Action" width="160px" />
+                     <TableRowCell label="Transaction" />
+                     <TableRowCell label="Actor" width="160px" sx={{ display: { xs: 'none', md: 'table-cell' } }} />
+                     <TableRowCell label="Change" width="220px" sx={{ display: { xs: 'none', md: 'table-cell' } }} />
+                     <TableRowCell label="Remarks" sx={{ display: { xs: 'none', sm: 'table-cell' } }} />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {paginated.map((h) => {
                     const Icon = ACTION_ICON[h.action_type] ?? RefreshCw
-                    const colorClass = ACTION_COLORS[h.action_type] ?? ''
+                    const colors = ACTION_COLORS[h.action_type] ?? { bg: '#F1F5F9', color: '#475569', border: 'divider' }
                     const txn = txnMap[h.transaction_id]
                     const hasChange = h.old_value !== null || h.new_value !== null
+
                     return (
-                      <tr key={h.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                       <TableRow key={h.id} sx={{ '&:hover': { bgcolor: 'rgba(0,0,0,0.015)' } }}>
+                        <TableCell sx={{ fontSize: '12px', color: 'text.secondary', whiteSpace: 'nowrap', display: { xs: 'none', sm: 'table-cell' } }}>
                           {formatDateTime(h.changed_at)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${colorClass}`}>
-                            <Icon className="h-3 w-3" />
-                            {h.action_type.replace(/_/g, ' ')}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-xs font-medium text-foreground leading-snug">
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            icon={<Icon style={{ width: 12, height: 12, color: colors.color }} />}
+                            label={h.action_type.replace(/_/g, ' ')}
+                            size="small"
+                            sx={{
+                              bgcolor: colors.bg,
+                              color: colors.color,
+                              borderColor: colors.border,
+                              border: '1px solid',
+                              fontWeight: 600,
+                              height: '24px',
+                              fontSize: '11px',
+                              '& .MuiChip-icon': { color: 'inherit', ml: 1 }
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
                             {txn?.service_name ?? h.transaction_id}
-                          </p>
+                          </Typography>
                           {txn && (
-                            <p className="text-[11px] text-muted-foreground">
+                            <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>
                               {txn.client_name} · #{txn.id}
-                            </p>
+                            </Typography>
                           )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-xs font-medium text-foreground">{h.changed_by_name}</p>
-                        </td>
-                        <td className="px-4 py-3">
+                        </TableCell>
+                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                          <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>{h.changed_by_name}</Typography>
+                        </TableCell>
+                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                           {hasChange ? (
-                            <p className="text-[11px] font-mono text-muted-foreground">
-                              <span className="text-destructive/80">{h.old_value ?? '—'}</span>
-                              <span className="text-primary/60 mx-1">→</span>
-                              <span className="text-emerald-700">{h.new_value ?? '—'}</span>
-                            </p>
+                            <Typography sx={{ fontSize: '11px', fontFamily: 'monospace', color: 'text.secondary' }}>
+                              <span style={{ color: '#E24B4A' }}>{h.old_value ?? '—'}</span>
+                              <span style={{ color: 'rgba(88,0,0,0.4)', margin: '0 4px' }}>→</span>
+                              <span style={{ color: '#1D9E75', fontWeight: 600 }}>{h.new_value ?? '—'}</span>
+                            </Typography>
                           ) : (
-                            <span className="text-[11px] text-muted-foreground italic">—</span>
+                            <Typography sx={{ fontSize: '11px', color: 'text.secondary', fontStyle: 'italic' }}>—</Typography>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground max-w-[180px] truncate">
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '12px', color: 'text.secondary', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: { xs: 'none', sm: 'table-cell' } }} title={h.remarks ?? ''}>
                           {h.remarks ?? '—'}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
 
           {/* Pagination */}
           {!loading && total > PAGE_SIZE && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border/60">
-              <p className="text-xs text-muted-foreground">
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 2, borderTop: '1px solid #E5E7EB' }}>
+              <Typography sx={{ fontSize: '12px', color: 'text.secondary' }}>
                 Showing {((page_ - 1) * PAGE_SIZE) + 1}–{Math.min(page_ * PAGE_SIZE, total)} of {total}
-              </p>
-              <div className="flex gap-2">
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs"
+                  variant="outlined"
+                  size="small"
                   disabled={page_ <= 1}
                   onClick={() => setPage((p) => p - 1)}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderColor: 'divider', color: 'text.primary' }}
                 >
                   Previous
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs"
+                  variant="outlined"
+                  size="small"
                   disabled={page_ >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderColor: 'divider', color: 'text.primary' }}
                 >
                   Next
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
         </Card>
-      </div>
-    </div>
+      </Box>
+    </Box>
+  )
+}
+
+function TableRowCell({ label, width, sx }: { label: string; width?: string; sx?: any }) {
+  return (
+    <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '13.5px', ...(width && { width }), ...sx }}>
+      {label}
+    </TableCell>
   )
 }

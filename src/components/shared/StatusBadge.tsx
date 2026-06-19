@@ -1,6 +1,6 @@
 import { Clock, PlayCircle, CheckCircle2 } from 'lucide-react'
 import type { TransactionStatus, DocumentaryStatus, SlaStatus } from '@/types'
-import { cn } from '@/utils/cn'
+import { Chip } from '@mui/material'
 
 interface StatusBadgeProps {
   status: TransactionStatus
@@ -11,30 +11,31 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = {
     pending: {
       label: 'Pending',
-      icon: Clock,
-      style: { backgroundColor: 'var(--warning-bg)', color: 'var(--warning)', borderColor: 'rgba(186, 117, 23, 0.3)' },
+      icon: <Clock style={{ width: 14, height: 14 }} />,
+      style: { backgroundColor: 'var(--warning-bg)', color: 'var(--warning)', borderColor: 'rgba(186, 117, 23, 0.3)', fontWeight: 600 },
     },
     in_progress: {
       label: 'In Progress',
-      icon: PlayCircle,
-      style: { backgroundColor: '#eff6ff', color: '#2563eb', borderColor: '#2563eb' },
+      icon: <PlayCircle style={{ width: 14, height: 14 }} />,
+      style: { backgroundColor: '#eff6ff', color: '#2563eb', borderColor: 'rgba(37, 99, 235, 0.3)', fontWeight: 600 },
     },
     completed: {
       label: 'Completed',
-      icon: CheckCircle2,
-      style: { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'rgba(29, 158, 117, 0.3)' },
+      icon: <CheckCircle2 style={{ width: 14, height: 14 }} />,
+      style: { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'rgba(29, 158, 117, 0.3)', fontWeight: 600 },
     },
   }[status]
 
-  const Icon = config.icon
   return (
-    <span
-      className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border', className)}
+    <Chip
+      size="small"
+      icon={config.icon}
+      label={config.label}
+      variant="outlined"
       style={config.style}
-    >
-      <Icon className="h-3 w-3" />
-      {config.label}
-    </span>
+      className={className}
+      sx={{ '& .MuiChip-icon': { color: 'inherit' } }}
+    />
   )
 }
 
@@ -47,25 +48,26 @@ export function DocumentaryBadge({ status, className }: DocumentaryBadgeProps) {
   const config = {
     complete: {
       label: 'Complete',
-      style: { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'rgba(29, 158, 117, 0.3)' }
+      style: { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'rgba(29, 158, 117, 0.3)', fontWeight: 600 }
     },
     incomplete: {
       label: 'Incomplete',
-      style: { backgroundColor: 'var(--error-bg)', color: 'var(--error)', borderColor: 'rgba(226, 75, 74, 0.3)' }
+      style: { backgroundColor: 'var(--error-bg)', color: 'var(--error)', borderColor: 'rgba(226, 75, 74, 0.3)', fontWeight: 600 }
     },
     for_compliance: {
       label: 'For Compliance',
-      style: { backgroundColor: 'var(--warning-bg)', color: 'var(--warning)', borderColor: 'rgba(186, 117, 23, 0.3)' }
+      style: { backgroundColor: 'var(--warning-bg)', color: 'var(--warning)', borderColor: 'rgba(186, 117, 23, 0.3)', fontWeight: 600 }
     },
   }[status]
 
   return (
-    <span
-      className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border', className)}
+    <Chip
+      size="small"
+      label={config.label}
+      variant="outlined"
       style={config.style}
-    >
-      {config.label}
-    </span>
+      className={className}
+    />
   )
 }
 
@@ -79,26 +81,32 @@ export function SLABadge({ status, isBreached, className }: SLABadgeProps) {
   const config = {
     compliant: {
       label: 'Compliant',
-      style: { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'rgba(29, 158, 117, 0.3)' }
+      style: { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'rgba(29, 158, 117, 0.3)', fontWeight: 600 }
     },
     non_compliant: {
       label: 'Non-Compliant',
-      style: { backgroundColor: 'var(--error-bg)', color: 'var(--error)', borderColor: 'rgba(226, 75, 74, 0.3)' }
+      style: { backgroundColor: 'var(--error-bg)', color: 'var(--error)', borderColor: 'rgba(226, 75, 74, 0.3)', fontWeight: 600 }
     },
     pending_computation: {
       label: 'Pending',
-      style: { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
+      style: { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)', fontWeight: 600 }
+    },
+    overridden: {
+      label: 'Overridden (Manual)',
+      style: { backgroundColor: '#fef3c7', color: '#1e3a8a', borderColor: '#fcd34d', fontWeight: 600 }
     },
   }[status]
 
   return (
-    <span
-      className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border', isBreached && 'animate-pulse-soft', className)}
+    <Chip
+      size="small"
+      icon={isBreached ? <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--error)', display: 'inline-block' }} /> : undefined}
+      label={config.label}
+      variant="outlined"
       style={config.style}
-    >
-      {isBreached && <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--error)' }} />}
-      {config.label}
-    </span>
+      className={className}
+      sx={{ '& .MuiChip-icon': { display: 'flex', alignItems: 'center', justifyContent: 'center' } }}
+    />
   )
 }
 
@@ -110,27 +118,27 @@ export function RoleBadge({ role }: RoleBadgeProps) {
   const config: Record<string, { label: string; style: React.CSSProperties }> = {
     subsystem_admin: {
       label: 'Subsystem Admin',
-      style: { backgroundColor: 'rgba(88, 0, 0, 0.08)', color: 'var(--pup-primary)', borderColor: 'rgba(88, 0, 0, 0.2)' }
+      style: { backgroundColor: 'rgba(88, 0, 0, 0.08)', color: 'var(--pup-primary)', borderColor: 'rgba(88, 0, 0, 0.2)', fontWeight: 600 }
     },
     staff: {
       label: 'Staff',
-      style: { backgroundColor: 'rgba(200, 150, 12, 0.12)', color: 'var(--pup-gold)', borderColor: 'rgba(200, 150, 12, 0.3)' }
+      style: { backgroundColor: 'rgba(200, 150, 12, 0.12)', color: 'var(--pup-gold)', borderColor: 'rgba(200, 150, 12, 0.3)', fontWeight: 600 }
     },
     opcr_evaluator: {
       label: 'OPCR Evaluator',
-      style: { backgroundColor: 'rgba(27, 58, 107, 0.08)', color: 'var(--info)', borderColor: 'rgba(27, 58, 107, 0.2)' }
+      style: { backgroundColor: 'rgba(27, 58, 107, 0.08)', color: 'var(--info)', borderColor: 'rgba(27, 58, 107, 0.2)', fontWeight: 600 }
     },
   }
   const c = config[role] ?? {
     label: role,
-    style: { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
+    style: { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)', fontWeight: 600 }
   }
   return (
-    <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border"
+    <Chip
+      size="small"
+      label={c.label}
+      variant="outlined"
       style={c.style}
-    >
-      {c.label}
-    </span>
+    />
   )
 }

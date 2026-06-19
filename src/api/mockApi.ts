@@ -379,3 +379,47 @@ export async function getDashboardStatsApi(officeId?: string): Promise<Dashboard
     sla_breach_count, compliance_rate,
   }
 }
+
+export async function overrideSlaApi(
+  id: string,
+  reason: string,
+  documentName: string,
+  actingUser: User,
+): Promise<Transaction> {
+  await delay()
+  const idx = _transactions.findIndex((t) => t.id === id)
+  if (idx === -1) throw new Error('Transaction not found')
+
+  const txn = _transactions[idx]
+  const now = new Date().toISOString()
+
+  const updated: Transaction = {
+    ...txn,
+    sla_status: 'overridden',
+    is_sla_breached: false,
+    is_overridden: true,
+    override_reason: reason,
+    override_document_name: documentName,
+    updated_at: now,
+  }
+
+  _transactions[idx] = updated
+
+  _history.push({
+    id: `h-${Date.now()}`,
+    transaction_id: id,
+    action_type: 'STATUS_CHANGE',
+    old_status: txn.status,
+    new_status: txn.status,
+    documentary_old: txn.documentary_status,
+    documentary_new: txn.documentary_status,
+    old_value: txn.sla_status,
+    new_value: 'overridden',
+    changed_by: actingUser.id,
+    changed_by_name: actingUser.name,
+    changed_at: now,
+    remarks: `SLA Override: ${reason} (Justification: ${documentName})`,
+  })
+
+  return updated
+}

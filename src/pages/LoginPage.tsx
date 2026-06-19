@@ -1,18 +1,14 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '@/auth/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Box, Paper, TextField, Button, IconButton, InputAdornment, Typography, Alert } from '@mui/material'
 
 const DEMO_ACCOUNTS = [
   { email: 'admin@ems.ph',           password: 'admin123', role: 'Subsystem Admin',  office: 'Administrative Office' },
   { email: 'staff@ems.ph',           password: 'staff123', role: 'Staff',            office: 'Administrative Office' },
   { email: 'opcr@ems.ph',            password: 'opcr123',  role: 'OPCR Evaluator',   office: 'Cross-Office' },
   { email: 'ebautista@pup.edu.ph',   password: 'admin123', role: 'Subsystem Admin',  office: 'OSAS' },
-  // Sprint 3 Academic Office demo accounts
   { email: 'academic_admin@ems.ph',  password: 'demo123',  role: 'Subsystem Admin',  office: 'Academic Office' },
   { email: 'academic_staff@ems.ph',  password: 'demo123',  role: 'Staff',            office: 'Academic Office' },
 ]
@@ -47,116 +43,187 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <Box 
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, rgba(88,0,0,0.05) 0%, rgba(245,247,250,1) 50%, rgba(200,150,12,0.06) 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Box sx={{ width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Header */}
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white border-4 border-primary/20 shadow-md mb-4">
+        <Box sx={{ textAlign: 'center' }}>
+          <Box 
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              bgcolor: 'white',
+              border: '4px solid rgba(88,0,0,0.1)',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+              mb: 2,
+            }}
+          >
             <img
               src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100017370/757bc6c1-305f-4e.png"
               alt="PUP Logo"
-              className="w-16 h-16 object-contain"
+              style={{ width: '64px', height: '64px', objectFit: 'contain' }}
               crossOrigin="anonymous"
             />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Evaluation &</h1>
-          <h1 className="text-2xl font-bold text-foreground">Monitoring System</h1>
-          <p className="text-sm text-muted-foreground mt-1">PUP Caloocan — OPCR Compliance Platform</p>
-        </div>
+          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', lineHeight: 1.2 }}>
+            Evaluation &
+          </Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', lineHeight: 1.2 }}>
+            Monitoring System
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, fontSize: '13px' }}>
+            PUP Caloocan — OPCR Compliance Platform
+          </Typography>
+        </Box>
 
         {/* Login Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base">Sign in to your account</CardTitle>
-            <CardDescription className="text-xs">
+        <Paper 
+          sx={{
+            p: 4,
+            borderRadius: '16px',
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)',
+            border: '1px solid #E5E7EB',
+          }}
+        >
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '15px' }}>
+              Sign in to your account
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
               Credentials are validated via the Administrative &amp; Records Management System (ARMS)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@pup.edu.ph"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPw ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
+            </Typography>
+          </Box>
 
-              {error && (
-                <div className="flex items-center gap-2 rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2">
-                  <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
-                  <p className="text-xs text-destructive">{error}</p>
-                </div>
-              )}
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <TextField
+              fullWidth
+              label="Email address"
+              type="email"
+              placeholder="you@pup.edu.ph"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              variant="outlined"
+            />
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin" />
-                    Authenticating…
-                  </span>
-                ) : 'Sign in'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPw ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              variant="outlined"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPw(!showPw)} edge="end">
+                        {showPw ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }
+              }}
+            />
 
-        {/* Demo accounts */}
-        <Card className="border-dashed">
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-              Demo Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="space-y-1.5">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => quickLogin(acc)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-md text-left hover:bg-accent transition-colors group"
-                >
-                  <div>
-                    <p className="text-xs font-medium text-foreground">{acc.role} · {acc.office}</p>
-                    <p className="text-[11px] text-muted-foreground">{acc.email} / {acc.password}</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors">
-                    Use →
-                  </span>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+            {error && (
+              <Alert severity="error" sx={{ borderRadius: '8px', fontSize: '12px', py: 0.5 }}>
+                {error}
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{
+                bgcolor: '#580000',
+                color: 'white',
+                fontWeight: 700,
+                py: 1.2,
+                borderRadius: '8px',
+                textTransform: 'none',
+                boxShadow: 'none',
+                '&:hover': {
+                  bgcolor: '#7a0c0c',
+                  boxShadow: 'none',
+                }
+              }}
+            >
+              {loading ? 'Authenticating…' : 'Sign in'}
+            </Button>
+          </Box>
+        </Paper>
+
+        {/* Demo Accounts */}
+        <Paper 
+          sx={{
+            p: 3,
+            borderRadius: '16px',
+            border: '1px dashed #D1D5DB',
+            bgcolor: 'transparent',
+            boxShadow: 'none',
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
+            Demo Accounts
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {DEMO_ACCOUNTS.map((acc) => (
+              <Box
+                key={acc.email}
+                component="button"
+                type="button"
+                onClick={() => quickLogin(acc)}
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  px: 2,
+                  py: 1.2,
+                  borderRadius: '8px',
+                  border: 0,
+                  bgcolor: 'transparent',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.2s',
+                  '&:hover': {
+                    bgcolor: 'rgba(0,0,0,0.03)',
+                  }
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: 'text.primary' }}>
+                    {acc.role} · {acc.office}
+                  </Typography>
+                  <Typography sx={{ fontSize: '10px', color: 'text.secondary', mt: '2px' }}>
+                    {acc.email} / {acc.password}
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: '11px', color: '#580000', fontWeight: 700 }}>
+                  Use →
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+      </Box>
+    </Box>
   )
 }

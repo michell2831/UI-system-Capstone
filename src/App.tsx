@@ -1,6 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppLayout } from './components/layout/AppLayout'
@@ -14,6 +16,58 @@ import { UnauthorizedPage } from './pages/UnauthorizedPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 
 import { ModalProvider } from './components/shared/ModalContext'
+
+const muiTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#580000', // PUP Maroon
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#C8960C', // PUP Gold
+      contrastText: '#ffffff',
+    },
+    success: {
+      main: '#1D9E75',
+    },
+    warning: {
+      main: '#BA7517',
+    },
+    error: {
+      main: '#E24B4A',
+    },
+    info: {
+      main: '#1B3A6B',
+    },
+    background: {
+      default: '#F5F7FA',
+      paper: '#FFFFFF',
+    },
+  },
+  typography: {
+    fontFamily: '"DM Sans", "Roboto", "Helvetica", "Arial", sans-serif',
+    button: {
+      textTransform: 'none',
+      fontWeight: 600,
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6,
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
+        },
+      },
+    },
+  },
+})
 
 const queryClient = new QueryClient()
 
@@ -60,63 +114,66 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppErrorBoundary>
-        <AuthProvider>
-          <ModalProvider>
-            <BrowserRouter>
-              <Routes>
-                {/* Public */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/unauthorized" element={<UnauthorizedPage />} />
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
+      <QueryClientProvider client={queryClient}>
+        <AppErrorBoundary>
+          <AuthProvider>
+            <ModalProvider>
+              <BrowserRouter>
+                <Routes>
+                  {/* Public */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-                {/* Protected app */}
-                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="dashboard" element={<DashboardPage />} />
+                  {/* Protected app */}
+                  <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                    <Route index element={<Navigate to="/dashboard" replace />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
 
-                  {/* EMS-001, 002, 003 — Subsystem Admin + OPCR Evaluator */}
-                  <Route
-                    path="users"
-                    element={
-                      <ProtectedRoute allowedRoles={['subsystem_admin', 'opcr_evaluator']}>
-                        <UsersPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* EMS-001, 002, 003 — Subsystem Admin + OPCR Evaluator */}
+                    <Route
+                      path="users"
+                      element={
+                        <ProtectedRoute allowedRoles={['subsystem_admin', 'opcr_evaluator']}>
+                          <UsersPage />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* EMS-004 to 007 — all roles (OPCR read-only) */}
-                  <Route path="transactions" element={<TransactionsPage />} />
-                  <Route path="transactions/:id" element={<TransactionDetailPage />} />
+                    {/* EMS-004 to 007 — all roles (OPCR read-only) */}
+                    <Route path="transactions" element={<TransactionsPage />} />
+                    <Route path="transactions/:id" element={<TransactionDetailPage />} />
 
-                  {/* EMS-008 to 012 — Subsystem Admin + OPCR Evaluator */}
-                  <Route
-                    path="sla-review"
-                    element={
-                      <ProtectedRoute allowedRoles={['subsystem_admin', 'opcr_evaluator']}>
-                        <SLAReviewPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* EMS-008 to 012 — Subsystem Admin + OPCR Evaluator */}
+                    <Route
+                      path="sla-review"
+                      element={
+                        <ProtectedRoute allowedRoles={['subsystem_admin', 'opcr_evaluator']}>
+                          <SLAReviewPage />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* EMS-026 — Audit Log — Subsystem Admin + OPCR Evaluator */}
-                  <Route
-                    path="audit-log"
-                    element={
-                      <ProtectedRoute allowedRoles={['subsystem_admin', 'opcr_evaluator']}>
-                        <AuditLogPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Route>
+                    {/* EMS-026 — Audit Log — Subsystem Admin + OPCR Evaluator */}
+                    <Route
+                      path="audit-log"
+                      element={
+                        <ProtectedRoute allowedRoles={['subsystem_admin', 'opcr_evaluator']}>
+                          <AuditLogPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
 
-                {/* Catch-all */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </ModalProvider>
-        </AuthProvider>
-      </AppErrorBoundary>
-    </QueryClientProvider>
+                  {/* Catch-all */}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </ModalProvider>
+          </AuthProvider>
+        </AppErrorBoundary>
+      </QueryClientProvider>
+    </ThemeProvider>
   )
 }
