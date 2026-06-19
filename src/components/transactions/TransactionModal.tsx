@@ -23,11 +23,12 @@ interface TransactionModalProps {
 }
 
 const ASSIGNED_TO_OPTIONS = [
-  { id: 'usr-2', name: 'Jose Reyes' },
-  { id: 'usr-3', name: 'Ana Cruz' },
-  { id: 'usr-5', name: 'Lucia Gonzales' },
-  { id: 'usr-6', name: 'Paolo Ramos' },
-  { id: 'usr-8', name: 'Marco Flores' },
+  { id: 'usr-1', name: 'Cedrick A asusula' },
+  { id: 'usr-2', name: 'Ryan Donayre' },
+  { id: 'usr-3', name: 'Mark bellen' },
+  { id: 'usr-4', name: 'Rod benedict Tbalizo' },
+  { id: 'usr-5', name: 'renren reas' },
+  { id: 'usr-6', name: 'mikhail reveche' },
 ]
 
 function TransactionModalInner({ open, onOpenChange, services, currentUser, onCreated }: TransactionModalProps) {
