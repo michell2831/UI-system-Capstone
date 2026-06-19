@@ -44,10 +44,10 @@ test('test', async ({ page }) => {
   await page.locator('input[type="text"]').nth(2).fill('Health Certificated Issued ');
   await page.getByRole('button', { name: 'Submit Transaction' }).click();
   await page.getByRole('button', { name: 'Confirm' }).click();
-  await page.getByRole('button', { name: 'Mark In Progress' }).click();
+  await page.getByRole('button', { name: 'Mark as In Progress' }).click();
   await page.getByRole('button', { name: 'Confirm' }).click();
   await page.locator('.grid.grid-cols-1 > div:nth-child(2)').click();
-  await page.getByRole('button', { name: 'Mark Completed' }).click();
+  await page.getByRole('button', { name: 'Mark as Completed' }).click();
   await page.getByRole('button', { name: 'Confirm' }).click();
   await page.getByRole('link', { name: 'Back to Transaction' }).click();
   await page.getByRole('link', { name: 'View' }).first().click();

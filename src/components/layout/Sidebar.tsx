@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 // MUI Outlined Icons — matching ARMS sidebar style
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
-import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined'
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined'
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
@@ -330,7 +330,7 @@ export function Sidebar() {
             renderLink('/audit-log', 'Audit Log', ManageSearchOutlinedIcon)
           }
 
-          {renderLink('/reports', 'Reports', BarChartOutlinedIcon)}
+          {renderLink('/reports', 'Reports', DescriptionOutlinedIcon)}
 
         </nav>
 

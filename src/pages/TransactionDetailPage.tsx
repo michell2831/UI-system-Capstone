@@ -78,7 +78,6 @@ export function TransactionDetailPage() {
   const [overrideModalOpen, setOverrideModalOpen] = useState(false)
   const [overrideTimeIn, setOverrideTimeIn] = useState('')
   const [overrideReason, setOverrideReason] = useState('')
-  const [overrideFile, setOverrideFile] = useState<File | null>(null)
   const [submittingOverride, setSubmittingOverride] = useState(false)
   const [uploadingInlineDoc, setUploadingInlineDoc] = useState(false)
   const [completionFile, setCompletionFile] = useState<File | null>(null)
@@ -88,11 +87,7 @@ export function TransactionDetailPage() {
   // EMS-025: locked = completed (is_locked set atomically on completion)
   const canModify = user?.role !== 'opcr_evaluator' && !txn?.is_locked
 
-  const handleFileChange = (e: any) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setOverrideFile(e.target.files[0])
-    }
-  }
+
 
   const handleOverrideSubmit = async () => {
     if (!txn || !user || !overrideTimeIn || !overrideReason.trim()) return
@@ -103,7 +98,7 @@ export function TransactionDetailPage() {
         txn.id,
         isoTimeIn,
         overrideReason.trim(),
-        overrideFile ? overrideFile.name : null,
+        null,
         user
       )
       setTxn(updated)
@@ -111,7 +106,6 @@ export function TransactionDetailPage() {
       setHistory(h)
       setOverrideModalOpen(false)
       setOverrideReason('')
-      setOverrideFile(null)
       showResult({
         type: 'success',
         title: 'Time-In Overridden',
@@ -545,7 +539,7 @@ export function TransactionDetailPage() {
                       }}
                       startIcon={nextStatus === 'in_progress' ? <RotateCcw style={{ width: 16, height: 16 }} /> : <CheckCircle2 style={{ width: 16, height: 16 }} />}
                     >
-                      {nextStatus === 'in_progress' ? 'Mark In Progress' : 'Mark Completed'}
+                      {nextStatus === 'in_progress' ? 'Mark as In Progress' : 'Mark as Completed'}
                     </Button>
                   </Box>
                 )}
@@ -964,44 +958,6 @@ export function TransactionDetailPage() {
             />
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <InputLabel sx={{ fontSize: '12px', fontWeight: 700, color: 'text.primary' }}>Supporting Document (Optional)</InputLabel>
-            <Box 
-              sx={{
-                border: '2px dashed #D1D5DB',
-                borderRadius: '8px',
-                p: 2.5,
-                textAlign: 'center',
-                cursor: 'pointer',
-                position: 'relative',
-                bgcolor: 'rgba(0,0,0,0.01)',
-                transition: 'border-color 0.2s',
-                '&:hover': { borderColor: '#9CA3AF' }
-              }}
-            >
-              <input
-                type="file"
-                id="override-doc-upload"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  opacity: 0,
-                  cursor: 'pointer',
-                }}
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              />
-              <FileUp style={{ width: 32, height: 32, color: '#9CA3AF', margin: '0 auto 8px' }} />
-              <Typography sx={{ fontSize: '12px', fontWeight: 600 }}>
-                {overrideFile ? overrideFile.name : 'Click to select or drag document'}
-              </Typography>
-              <Typography sx={{ fontSize: '10px', color: 'text.secondary', mt: '4px' }}>
-                Supports PDF, DOCX, PNG, JPG (Max 5MB)
-              </Typography>
-            </Box>
-          </Box>
         </DialogContent>
 
         <DialogActions sx={{ p: 0, pt: 3, gap: 1, justifyContent: 'flex-end' }}>

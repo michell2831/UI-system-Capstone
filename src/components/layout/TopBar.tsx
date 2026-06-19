@@ -41,10 +41,10 @@ export function TopBar() {
   // Dynamic breadcrumb labels based on current path
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     const path = location.pathname
-    const items: BreadcrumbItem[] = [{ label: 'Dashboard', to: '/dashboard' }]
+    const items: BreadcrumbItem[] = [{ label: 'Monitoring Overview', to: '/dashboard' }]
 
     if (path === '/dashboard') {
-      return [{ label: 'Dashboard', to: '/dashboard', active: true }]
+      return [{ label: 'Monitoring Overview', to: '/dashboard', active: true }]
     }
 
     if (path === '/users') {

@@ -92,7 +92,7 @@ function StatCard({ title, value, sub, icon: Icon, variant = 'default', accentCo
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
             <Box>
-              <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>
+              <Typography sx={{ fontSize: '12px', color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {title}
               </Typography>
               <Typography sx={{ fontSize: '28px', fontWeight: 700, color: 'text.primary', mt: '4px', lineHeight: 1.1 }}>
@@ -140,7 +140,7 @@ export function DashboardPage() {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px' }}>
-        <Box 
+        <Box
           sx={{
             width: '32px',
             height: '32px',
@@ -158,6 +158,8 @@ export function DashboardPage() {
     )
   }
 
+  const hasRecords = stats && stats.total_transactions > 0
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#F5F7FA' }}>
       <TopBar />
@@ -167,10 +169,7 @@ export function DashboardPage() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
           <Box>
             <Typography variant="h5" sx={{ fontFamily: "'DM Serif Display', Georgia, serif", color: '#0F172A', fontWeight: 500 }}>
-              Dashboard
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: '2px', fontSize: '13px' }}>
-              Overview — {user?.office_name}
+              Monitoring Overview
             </Typography>
           </Box>
         </Box>
@@ -187,7 +186,7 @@ export function DashboardPage() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Total Transactions"
-                value={stats?.total_transactions ?? 0}
+                value={hasRecords ? (stats?.total_transactions ?? 0) : '_ _'}
                 icon={ClipboardList}
                 accentColor="#580000"
               />
@@ -195,7 +194,7 @@ export function DashboardPage() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="In Progress"
-                value={stats?.in_progress ?? 0}
+                value={hasRecords ? (stats?.in_progress ?? 0) : '_ _'}
                 sub={`${stats?.pending ?? 0} pending`}
                 icon={Activity}
                 accentColor="#1B3A6B"
@@ -205,7 +204,7 @@ export function DashboardPage() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Compliance Rate"
-                value={`${stats?.compliance_rate ?? 0}%`}
+                value={hasRecords && stats && stats.completed > 0 ? `${stats.compliance_rate}%` : '_ _'}
                 sub={`${stats?.compliant ?? 0} compliant`}
                 icon={TrendingUp}
                 accentColor="#1D9E75"
@@ -215,7 +214,7 @@ export function DashboardPage() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="SLA Breaches"
-                value={stats?.sla_breach_count ?? 0}
+                value={hasRecords ? (stats?.sla_breach_count ?? 0) : '_ _'}
                 sub="needs attention"
                 icon={AlertTriangle}
                 accentColor="#E24B4A"
@@ -249,9 +248,9 @@ export function DashboardPage() {
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
                       <Box>
-                        <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>Compliant</Typography>
+                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Compliant</Typography>
                         <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#1D9E75', mt: '4px', lineHeight: 1.1 }}>
-                          {stats?.compliant ?? 0}
+                          {hasRecords ? (stats?.compliant ?? 0) : '_ _'}
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
@@ -278,9 +277,9 @@ export function DashboardPage() {
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
                       <Box>
-                        <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>Non-Compliant</Typography>
+                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Non-Compliant</Typography>
                         <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#E24B4A', mt: '4px', lineHeight: 1.1 }}>
-                          {stats?.non_compliant ?? 0}
+                          {hasRecords ? (stats?.non_compliant ?? 0) : '_ _'}
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
@@ -307,9 +306,9 @@ export function DashboardPage() {
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1, alignSelf: 'stretch' }}>
                       <Box>
-                        <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500 }}>Pending SLA</Typography>
+                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pending SLA</Typography>
                         <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#BA7517', mt: '4px', lineHeight: 1.1 }}>
-                          {stats?.pending_computation ?? 0}
+                          {hasRecords ? (stats?.pending_computation ?? 0) : '_ _'}
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: '11.5px', color: 'transparent', mt: '12px', userSelect: 'none' }}>&nbsp;</Typography>
@@ -394,18 +393,18 @@ export function DashboardPage() {
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
               Recent Transactions
             </Typography>
-            <Box 
-              component={Link} 
-              to="/transactions" 
-              sx={{ 
-                fontSize: '13px', 
-                color: '#580000', 
+            <Box
+              component={Link}
+              to="/transactions"
+              sx={{
+                fontSize: '13px',
+                color: '#580000',
                 fontWeight: 700,
-                textDecoration: 'none', 
-                display: 'flex', 
-                alignItems: 'center', 
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
                 gap: 0.5,
-                '&:hover': { textDecoration: 'underline' } 
+                '&:hover': { textDecoration: 'underline' }
               }}
             >
               View all <ArrowRight style={{ width: 12, height: 12 }} />
@@ -413,43 +412,49 @@ export function DashboardPage() {
           </Box>
           <CardContent sx={{ pt: 1, pb: '16px !important' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              {recent.map((t, i) => (
-                <Box
-                  component={Link}
-                  key={t.id}
-                  to={`/transactions/${t.id}`}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    alignItems: { xs: 'flex-start', sm: 'center' },
-                    justifyContent: 'space-between',
-                    gap: { xs: 1.5, sm: 0 },
-                    py: 2,
-                    px: 1.5,
-                    borderRadius: '8px',
-                    textDecoration: 'none',
-                    borderBottom: i < recent.length - 1 ? '1px solid #E5E7EB' : 0,
-                    transition: 'background-color 0.2s',
-                    '&:hover': {
-                      bgcolor: 'rgba(0,0,0,0.02)',
-                    }
-                  }}
-                >
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {t.service_name}
-                    </Typography>
-                    <Typography sx={{ fontSize: '11px', color: 'text.secondary', mt: '2px' }}>
-                      {t.client_name} · {formatDateTime(t.time_in)}
-                    </Typography>
+              {recent.length === 0 ? (
+                <Typography sx={{ fontSize: '13px', color: 'text.secondary', textAlign: 'center', py: 4 }}>
+                  No recent transactions yet.
+                </Typography>
+              ) : (
+                recent.map((t, i) => (
+                  <Box
+                    component={Link}
+                    key={t.id}
+                    to={`/transactions/${t.id}`}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      alignItems: { xs: 'flex-start', sm: 'center' },
+                      justifyContent: 'space-between',
+                      gap: { xs: 1.5, sm: 0 },
+                      py: 2,
+                      px: 1.5,
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      borderBottom: i < recent.length - 1 ? '1px solid #E5E7EB' : 0,
+                      transition: 'background-color 0.2s',
+                      '&:hover': {
+                        bgcolor: 'rgba(0,0,0,0.02)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {t.service_name}
+                      </Typography>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary', mt: '2px' }}>
+                        {t.client_name} · {formatDateTime(t.time_in)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' }, width: { xs: '100%', sm: 'auto' } }}>
+                      <StatusBadge status={t.status} />
+                      <DocumentaryBadge status={t.documentary_status} />
+                      <SLABadge status={t.sla_status} isBreached={t.is_sla_breached} />
+                    </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' }, width: { xs: '100%', sm: 'auto' } }}>
-                    <StatusBadge status={t.status} />
-                    <DocumentaryBadge status={t.documentary_status} />
-                    <SLABadge status={t.sla_status} isBreached={t.is_sla_breached} />
-                  </Box>
-                </Box>
-              ))}
+                ))
+              )}
             </Box>
           </CardContent>
         </Card>
