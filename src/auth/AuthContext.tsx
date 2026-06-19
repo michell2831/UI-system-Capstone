@@ -6,8 +6,6 @@ import React, {
   useCallback,
 } from 'react'
 import type { JwtPayload, User, LoginDto } from '@/types'
-import { getCurrentUser, removeToken } from '@/utils/jwt'
-import { loginApi, getUsersApi } from '@/api/mockApi'
 
 interface AuthContextValue {
   user: User | null
@@ -18,39 +16,43 @@ interface AuthContextValue {
   logout: () => void
 }
 
+const DEFAULT_USER: User = {
+  id: 'usr-admin',
+  name: 'System Administrator',
+  email: 'admin@ems.ph',
+  role: 'subsystem_admin',
+  office_id: 'off-1',
+  office_code: 'ADMIN_OFFICE',
+  office_name: 'Administrative Office',
+  is_active: true,
+  created_at: new Date().toISOString(),
+}
+
+const DEFAULT_JWT_PAYLOAD: JwtPayload = {
+  sub: 'usr-admin',
+  name: 'System Administrator',
+  email: 'admin@ems.ph',
+  role: 'subsystem_admin',
+  office_id: 'off-1',
+  office_code: 'ADMIN_OFFICE',
+  office_name: 'Administrative Office',
+  iat: Math.floor(Date.now() / 1000),
+  exp: Math.floor(Date.now() / 1000) + 28800,
+}
+
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [jwtPayload, setJwtPayload] = useState<JwtPayload | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const payload = getCurrentUser()
-    if (payload) {
-      setJwtPayload(payload)
-      getUsersApi()
-        .then((users) => {
-          const found = users.find((u) => u.id === payload.sub)
-          if (found) setUser(found)
-        })
-        .finally(() => setIsLoading(false))
-    } else {
-      setIsLoading(false)
-    }
-  }, [])
+  const [user] = useState<User | null>(DEFAULT_USER)
+  const [jwtPayload] = useState<JwtPayload | null>(DEFAULT_JWT_PAYLOAD)
+  const [isLoading] = useState(false)
 
   const login = useCallback(async (dto: LoginDto) => {
-    const res = await loginApi(dto)
-    const payload = getCurrentUser()
-    setJwtPayload(payload)
-    setUser(res.user)
+    console.log('Bypassed login with', dto)
   }, [])
 
   const logout = useCallback(() => {
-    removeToken()
-    setUser(null)
-    setJwtPayload(null)
+    console.log('Bypassed logout')
   }, [])
 
   return (
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         jwtPayload,
         isLoading,
-        isAuthenticated: !!user,
+        isAuthenticated: true,
         login,
         logout,
       }}

@@ -89,7 +89,7 @@ export function TopBar() {
   const handleLogout = () => {
     setProfileAnchorEl(null)
     logout()
-    navigate('/login')
+    navigate('/dashboard')
   }
 
   const breadcrumbs = getBreadcrumbs()

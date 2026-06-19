@@ -23,7 +23,7 @@ export function ProtectedRoute({ children, allowedRoles }: Props) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {

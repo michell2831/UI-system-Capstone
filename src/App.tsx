@@ -6,7 +6,6 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppLayout } from './components/layout/AppLayout'
-import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { UsersPage } from './pages/UsersPage'
 import { TransactionsPage } from './pages/TransactionsPage'
@@ -123,7 +122,6 @@ export default function App() {
               <BrowserRouter>
                 <Routes>
                   {/* Public */}
-                  <Route path="/login" element={<LoginPage />} />
                   <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
                   {/* Protected app */}

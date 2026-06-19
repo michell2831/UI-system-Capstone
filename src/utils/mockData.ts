@@ -1,4 +1,4 @@
-import type { User, Office, Service, Transaction, TransactionStatusHistory } from '@/types'
+import type { Office, Service, Transaction, TransactionStatusHistory } from '@/types'
 import { parseSlaToSeconds } from './timeUtils'
 
 // ─── Offices ─────────────────────────────────────────────────────────────────
@@ -8,89 +8,6 @@ export const OFFICES: Office[] = [
   { id: 'off-2', name: 'Academic Office', code: 'ACADEMIC_OFFICE' },
   { id: 'off-3', name: 'Office of Student Affairs and Services', code: 'OSAS' },
 ]
-
-// ─── Users (mock ARMS-synced) ─────────────────────────────────────────────────
-
-export const MOCK_USERS: User[] = [
-  // Administrative Office
-  {
-    id: 'usr-1', name: 'John Michael Garcia', email: 'Garcia@pup.edu.ph',
-    role: 'subsystem_admin', office_id: 'off-1', office_code: 'ADMIN_OFFICE',
-    office_name: 'Administrative Office', is_active: true, created_at: '2026-01-01T00:00:00Z',
-  },
-  {
-    id: 'usr-2', name: 'Kenneth Yulip', email: 'Yulip@pup.edu.ph',
-    role: 'staff', office_id: 'off-1', office_code: 'ADMIN_OFFICE',
-    office_name: 'Administrative Office', is_active: true, created_at: '2026-01-02T00:00:00Z',
-  },
-  {
-    id: 'usr-3', name: 'Ryan Bill Donayre', email: 'Donayre@pup.edu.ph',
-    role: 'staff', office_id: 'off-1', office_code: 'ADMIN_OFFICE',
-    office_name: 'Administrative Office', is_active: true, created_at: '2026-01-03T00:00:00Z',
-  },
-  // Academic Office
-  {
-    id: 'usr-4', name: 'Ramon Dela Cruz', email: 'rdelacruz@pup.edu.ph',
-    role: 'subsystem_admin', office_id: 'off-2', office_code: 'ACADEMIC_OFFICE',
-    office_name: 'Academic Office', is_active: true, created_at: '2026-01-04T00:00:00Z',
-  },
-  {
-    id: 'usr-5', name: 'Lucia Gonzales', email: 'lgonzales@pup.edu.ph',
-    role: 'staff', office_id: 'off-2', office_code: 'ACADEMIC_OFFICE',
-    office_name: 'Academic Office', is_active: true, created_at: '2026-01-05T00:00:00Z',
-  },
-  {
-    id: 'usr-6', name: 'Paolo Ramos', email: 'pramos@pup.edu.ph',
-    role: 'staff', office_id: 'off-2', office_code: 'ACADEMIC_OFFICE',
-    office_name: 'Academic Office', is_active: true, created_at: '2026-01-06T00:00:00Z',
-  },
-  // OSAS
-  {
-    id: 'usr-7', name: 'Mikhail Reveche', email: 'ebautista@pup.edu.ph',
-    role: 'subsystem_admin', office_id: 'off-3', office_code: 'OSAS',
-    office_name: 'OSAS', is_active: true, created_at: '2026-01-07T00:00:00Z',
-  },
-  {
-    id: 'usr-8', name: 'Marco Flores', email: 'mflores@pup.edu.ph',
-    role: 'staff', office_id: 'off-3', office_code: 'OSAS',
-    office_name: 'OSAS', is_active: true, created_at: '2026-01-08T00:00:00Z',
-  },
-  // OPCR Evaluator (cross-office)
-  {
-    id: 'usr-9', name: 'Pau Carillio', email: 'Pau@pup.edu.ph',
-    role: 'opcr_evaluator', office_id: 'off-1', office_code: 'ADMIN_OFFICE',
-    office_name: 'Administrative Office', is_active: true, created_at: '2026-01-09T00:00:00Z',
-  },
-  // ─── Sprint 3 Demo Accounts — Academic Office ─────────────────────────────
-  {
-    id: 'usr-10', name: 'Dr. Ana Reyes', email: 'academic_admin@ems.ph',
-    role: 'subsystem_admin', office_id: 'off-2', office_code: 'ACADEMIC_OFFICE',
-    office_name: 'Academic Office', is_active: true, created_at: '2026-01-10T00:00:00Z',
-  },
-  {
-    id: 'usr-11', name: 'Ben Santos', email: 'academic_staff@ems.ph',
-    role: 'staff', office_id: 'off-2', office_code: 'ACADEMIC_OFFICE',
-    office_name: 'Academic Office', is_active: true, created_at: '2026-01-11T00:00:00Z',
-  },
-]
-
-// Mock credentials for demo login
-export const MOCK_CREDENTIALS: Record<string, { password: string; userId: string }> = {
-  'msantos@pup.edu.ph': { password: 'admin123', userId: 'usr-1' },
-  'jreyes@pup.edu.ph': { password: 'staff123', userId: 'usr-2' },
-  'rdela@pup.edu.ph': { password: 'admin123', userId: 'usr-4' },
-  'lgonzales@pup.edu.ph': { password: 'staff123', userId: 'usr-5' },
-  'ebautista@pup.edu.ph': { password: 'admin123', userId: 'usr-7' },
-  'mflores@pup.edu.ph': { password: 'staff123', userId: 'usr-8' },
-  'rlim@pup.edu.ph': { password: 'opcr123', userId: 'usr-9' },
-  // convenience aliases
-  'admin@ems.ph': { password: 'admin123', userId: 'usr-1' },
-  'staff@ems.ph': { password: 'staff123', userId: 'usr-2' },
-  'opcr@ems.ph':  { password: 'opcr123',  userId: 'usr-9' },
-  // Sprint 3 demo accounts — Academic Office
-  'academic_admin@ems.ph': { password: 'demo123', userId: 'usr-10' },
-  'academic_staff@ems.ph': { password: 'demo123', userId: 'usr-11' },
-}
 
 // ─── Services (from OPCR SLA CSV) ────────────────────────────────────────────
 

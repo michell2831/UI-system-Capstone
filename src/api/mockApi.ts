@@ -9,58 +9,25 @@ import type {
   DashboardStats, LoginDto, LoginResponse,
 } from '@/types'
 import {
-  MOCK_USERS, MOCK_SERVICES, MOCK_TRANSACTIONS, MOCK_HISTORY, MOCK_CREDENTIALS,
+  MOCK_SERVICES, MOCK_TRANSACTIONS, MOCK_HISTORY,
 } from '@/utils/mockData'
-import { saveToken } from '@/utils/jwt'
-import { elapsedSeconds } from '@/utils/timeUtils'
+import { apiClient } from './client'
 import { computeSlaStatus, isSlaBreached } from '@/utils/slaUtils'
 
 // ─── In-memory store ─────────────────────────────────────────────────────────
 
-const _users = [...MOCK_USERS]
 let _transactions: Transaction[] = [...MOCK_TRANSACTIONS]
 const _history: TransactionStatusHistory[] = [...MOCK_HISTORY]
 
 const delay = (ms = 300) => new Promise<void>((r) => setTimeout(r, ms))
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-
-export async function loginApi(dto: LoginDto): Promise<LoginResponse> {
-  await delay(500)
-  const cred = MOCK_CREDENTIALS[dto.email]
-  if (!cred || cred.password !== dto.password) {
-    throw new Error('Invalid email or password')
-  }
-  const user = _users.find((u) => u.id === cred.userId)
-  if (!user || !user.is_active) throw new Error('User account is inactive')
-
-  // Build a mock JWT (not cryptographically signed — for demo only)
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
-  const payload = btoa(JSON.stringify({
-    sub: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    office_id: user.office_id,
-    office_code: user.office_code,
-    office_name: user.office_name,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 28800, // 8 hours
-  }))
-  const signature = btoa('mock_signature')
-  const token = `${header}.${payload}.${signature}`
-
-  saveToken(token)
-  return { access_token: token, user }
-}
-
 // ─── Users (EMS-001) ─────────────────────────────────────────────────────────
 
 export async function getUsersApi(officeId?: string): Promise<User[]> {
-  await delay()
-  return officeId
-    ? _users.filter((u) => u.office_id === officeId && u.is_active)
-    : _users.filter((u) => u.is_active)
+  const response = await apiClient.get<User[]>(
+    officeId ? `/users?officeId=${officeId}` : '/users'
+  )
+  return response.data
 }
 
 // ─── Services ────────────────────────────────────────────────────────────────
@@ -99,11 +66,20 @@ export async function createTransactionApi(
   const service = MOCK_SERVICES.find((s) => s.id === dto.service_id)
   if (!service) throw new Error('Service not found')
 
-  const assignee = dto.assigned_to ? _users.find((u) => u.id === dto.assigned_to) : null
+  let assigneeName: string | null = null
+  if (dto.assigned_to) {
+    try {
+      const usersRes = await apiClient.get<User[]>('/users')
+      const found = usersRes.data.find((u) => u.id === dto.assigned_to)
+      if (found) assigneeName = found.name
+    } catch {
+      assigneeName = dto.assigned_to
+    }
+  }
   const documentaryStatus = dto.documentation_status ?? 'complete'
 
-  const assignedToId = assignee?.id ?? dto.assigned_to ?? null
-  const assignedToName = assignee?.name ?? (dto.assigned_to ?? null)
+  const assignedToId = dto.assigned_to ?? null
+  const assignedToName = assigneeName ?? dto.assigned_to ?? null
 
   const newTxn: Transaction = {
     id: `txn-${Date.now()}`,
@@ -180,7 +156,8 @@ export async function assignTransactionApi(
   const txn = _transactions[idx]
   if (txn.office_id !== actingUser.office_id) throw new Error('Cross-office assignment not allowed')
 
-  const assignee = _users.find((u) => u.id === assignedTo)
+  const usersRes = await apiClient.get<User[]>('/users')
+  const assignee = usersRes.data.find((u) => u.id === assignedTo)
   if (!assignee || assignee.office_id !== txn.office_id) {
     throw new Error('Assignee must be in the same office')
   }

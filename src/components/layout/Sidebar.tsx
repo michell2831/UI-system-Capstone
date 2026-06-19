@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom'
 
 // MUI Outlined Icons — matching ARMS sidebar style
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
-import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined'
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined'
